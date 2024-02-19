@@ -31,13 +31,12 @@ class HelloController {
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
         response.addHeader("Access-Control-Max-Age", "3600")
 
-        // SameSite=None; Secure
-        response.addHeader("Set-Cookie", "SameSite=None; Secure")
-
-        // set cookie
-        response.addCookie(Cookie("now", LocalDateTime.now().toString()))
-        response.writer.write("Hello, World!")
-        response.writer.flush()
-        response.writer.close()
+        // Set cookie "poly" to current time, and make it SameSite=None; Secure
+        response.addCookie(Cookie("poly", LocalDateTime.now().toString()).apply {
+            isHttpOnly = true
+            maxAge = 3600
+            secure = true
+            this.setAttribute("SameSite", "None")
+        })
     }
 }
