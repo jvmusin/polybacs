@@ -31,6 +31,9 @@ class HelloController {
         response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
         response.addHeader("Access-Control-Max-Age", "3600")
 
+        // SameSite=None; Secure
+        response.addHeader("Set-Cookie", "SameSite=None; Secure")
+
         // set cookie
         response.addCookie(Cookie("now", LocalDateTime.now().toString()))
         response.writer.write("Hello, World!")
