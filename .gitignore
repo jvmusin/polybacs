@@ -38,3 +38,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Converter ###
+polygon-problems
+src/main/resources/application.yaml
