@@ -37,6 +37,7 @@ class HelloController {
             maxAge = 3600
             secure = true
             this.setAttribute("SameSite", "None")
+            this.setAttribute("Partitioned", "true")
         })
     }
 }
