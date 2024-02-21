@@ -1,5 +1,6 @@
 package io.github.jvmusin.polybacs
 
+import jakarta.servlet.http.HttpServletResponse
 import org.apache.catalina.Context
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -8,6 +9,9 @@ import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.CookieValue
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.PongMessage
 import org.springframework.web.socket.TextMessage
@@ -23,6 +27,16 @@ class PolybacsApplication
 
 fun main(args: Array<String>) {
     runApplication<PolybacsApplication>(*args)
+}
+
+@RestController
+class JSessionIdController {
+    @GetMapping("/jsessionid")
+    fun jsessionid(@CookieValue("JSESSIONID") jsessionid: String?, response: HttpServletResponse
+    ): String {
+        response.setHeader("Access-Control-Allow-Origin", "*")
+        return jsessionid ?: "No JSESSIONID cookie found"
+    }
 }
 
 @Component
