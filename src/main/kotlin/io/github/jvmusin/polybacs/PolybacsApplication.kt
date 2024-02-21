@@ -34,7 +34,7 @@ class JSessionIdController {
     @GetMapping("/jsessionid")
     fun jsessionid(@CookieValue("JSESSIONID") jsessionid: String?, response: HttpServletResponse
     ): String {
-        response.setHeader("Access-Control-Allow-Origin", "*")
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
         return jsessionid ?: "No JSESSIONID cookie found"
     }
 }
