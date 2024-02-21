@@ -1,5 +1,6 @@
 package io.github.jvmusin.polybacs
 
+import io.github.jvmusin.polybacs.api.ToastKind
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.catalina.Context
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor
@@ -9,11 +10,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.CookieValue
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.socket.CloseStatus
-import org.springframework.web.socket.PongMessage
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.config.annotation.EnableWebSocket
@@ -29,19 +26,15 @@ fun main(args: Array<String>) {
     runApplication<PolybacsApplication>(*args)
 }
 
-@RestController
-class JSessionIdController {
-    @GetMapping("/jsessionid")
-    fun jsessionid(@CookieValue("JSESSIONID") jsessionid: String?, response: HttpServletResponse
-    ): String {
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
-        response.setHeader("Access-Control-Allow-Credentials", "true")
-        return jsessionid ?: "No JSESSIONID cookie found"
-    }
+fun HttpServletResponse.fixCors() {
+    setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
+    setHeader("Access-Control-Allow-Credentials", "true")
 }
 
 @Component
-class WebSocketConnectionKeeper : TextWebSocketHandler() {
+class WebSocketConnectionKeeper(
+    private val offloadScope: OffloadScope,
+) : TextWebSocketHandler() {
     private val handlers = hashMapOf<String, MutableList<WebSocketSession>>()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -62,9 +55,15 @@ class WebSocketConnectionKeeper : TextWebSocketHandler() {
         println("Received message: " + message.payload + " from session: ${session.sessionId} with id: ${session.id}")
     }
 
-    override fun handlePongMessage(session: WebSocketSession, message: PongMessage) {
-        println("Received pong message from session: ${session.sessionId} with id: ${session.id}")
-        super.handlePongMessage(session, message)
+    fun createSender(sessionId: String): ToastSender = object : ToastSender {
+        override fun send(content: String, kind: ToastKind) {
+            val list = handlers[sessionId] ?: return
+            for (session in list.filter { it.isOpen }) {
+                offloadScope.launch {
+                    session.sendMessage(TextMessage("{\"content\":\"$content\",\"kind\":\"$kind\"}"))
+                }
+            }
+        }
     }
 }
 
@@ -94,4 +93,8 @@ class WebSocketConfig(
             context.cookieProcessor = cookieProcessor
         }
     }
+}
+
+interface ToastSender {
+    fun send(content: String, kind: ToastKind = ToastKind.INFORMATION)
 }

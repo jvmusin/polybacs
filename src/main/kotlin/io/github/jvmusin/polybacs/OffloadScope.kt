@@ -4,14 +4,14 @@ import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Component
 class OffloadScope {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun launch(exceptionHandler: CoroutineExceptionHandler? = null, block: suspend CoroutineScope.() -> Unit) {
-        if (exceptionHandler != null) scope.launch(exceptionHandler, block = block)
-        else scope.launch(block = block)
+        scope.launch(exceptionHandler ?: EmptyCoroutineContext, block = block)
     }
 
     @PreDestroy
