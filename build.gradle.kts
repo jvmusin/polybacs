@@ -65,10 +65,10 @@ dependencies {
 	implementation("org.jsoup:jsoup:$jsoupVersion")
 
 
-	implementation("io.kotest:kotest-runner-junit5:$kotestVersion")
-	implementation("io.kotest:kotest-assertions-core:$kotestVersion")
-	implementation("io.kotest:kotest-property:$kotestVersion")
-	implementation("io.kotest.extensions:kotest-extensions-spring:1.1.3")
+	testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+	testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
+	testImplementation("io.kotest:kotest-property:$kotestVersion")
+	testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.3")
 
 }
 
