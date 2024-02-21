@@ -133,7 +133,7 @@ class PolygonApiFactory(private val config: PolygonConfig) {
      *
      * @return New PolygonAPI instance.
      */
-    fun create(): PolygonApi = RetrofitClientFactory.create(config.url) {
+    fun create(): PolygonApi = RetrofitClientFactory.create("https://polygon.codeforces.com/api/") {
         addInterceptor(Code400To200Interceptor())
         addInterceptor(ServerErrorRetryInterceptor())
         addInterceptor(TooManyRequestsRetryInterceptor())

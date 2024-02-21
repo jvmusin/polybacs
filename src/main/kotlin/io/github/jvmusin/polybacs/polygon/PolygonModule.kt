@@ -10,10 +10,9 @@ import org.springframework.context.annotation.Configuration
 class PolygonModule {
     @Bean
     fun polygonConfig(
-        @Value("\${polygon.url}") url: String,
         @Value("\${polygon.apiKey}") apiKey: String,
         @Value("\${polygon.secret}") secret: String,
-    ) = PolygonConfig(url, apiKey, secret)
+    ) = PolygonConfig(apiKey, secret)
 
     @Bean
     fun polygonApi(polygonConfig: PolygonConfig) = PolygonApiFactory(polygonConfig).create()

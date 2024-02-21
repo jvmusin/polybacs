@@ -25,8 +25,8 @@ class BacsArchiveServiceFactory(private val config: BacsConfig) {
             defaultRequest {
                 url {
                     protocol = HTTPS
-                    host = config.host
-                    encodedPath = "${config.basePath}/$encodedPath"
+                    host = "archive.bacs.cs.istu.ru"
+                    encodedPath = "repository/$encodedPath"
                 }
             }
             engine {
