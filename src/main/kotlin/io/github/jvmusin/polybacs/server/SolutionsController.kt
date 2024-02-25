@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/problems/{problemId}/solutions")
+@RequestMapping("/api/problems/{problemId}/solutions")
 class SolutionsController(
     private val polygonService: PolygonService,
     private val webSocketConnectionKeeper: WebSocketConnectionKeeper,

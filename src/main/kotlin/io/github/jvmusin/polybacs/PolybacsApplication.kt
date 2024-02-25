@@ -1,7 +1,7 @@
 package io.github.jvmusin.polybacs
 
 import io.github.jvmusin.polybacs.api.ToastKind
-import jakarta.servlet.http.HttpServletResponse
+import io.github.jvmusin.polybacs.util.ToastSender
 import org.apache.catalina.Context
 import org.apache.tomcat.util.http.Rfc6265CookieProcessor
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -24,11 +24,6 @@ class PolybacsApplication
 
 fun main(args: Array<String>) {
     runApplication<PolybacsApplication>(*args)
-}
-
-fun HttpServletResponse.fixCors() {
-    setHeader("Access-Control-Allow-Origin", "http://localhost:3000")
-    setHeader("Access-Control-Allow-Credentials", "true")
 }
 
 @Component
@@ -93,8 +88,4 @@ class WebSocketConfig(
             context.cookieProcessor = cookieProcessor
         }
     }
-}
-
-interface ToastSender {
-    fun send(content: String, kind: ToastKind = ToastKind.INFORMATION)
 }

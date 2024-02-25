@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/problems")
+@RequestMapping("/api/problems")
 class ProblemsController(
     private val polygonService: PolygonService,
     private val bacsArchiveService: BacsArchiveService,

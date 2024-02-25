@@ -1,6 +1,6 @@
 package io.github.jvmusin.polybacs.server
 
-import io.github.jvmusin.polybacs.ToastSender
+import io.github.jvmusin.polybacs.util.ToastSender
 import io.github.jvmusin.polybacs.WebSocketConnectionKeeper
 import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
 import io.github.jvmusin.polybacs.api.ProblemInfo
@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException
 import kotlin.io.path.name
 
 @RestController
-@RequestMapping("/problems/{problemId}")
+@RequestMapping("/api/problems/{problemId}")
 class ProblemController(
     private val bacsArchiveService: BacsArchiveService,
     private val polygonService: PolygonService,

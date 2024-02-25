@@ -1,7 +1,6 @@
 package io.github.jvmusin.polybacs.server
 
 import io.github.jvmusin.polybacs.WebSocketConnectionKeeper
-import io.github.jvmusin.polybacs.fixCors
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,6 +15,5 @@ class WebSocketTestController(
     @GetMapping("/test")
     fun test(session: HttpSession, response: HttpServletResponse) {
         webSocketConnectionKeeper.createSender(session.id).send("Hey you! This is a pong!")
-        response.fixCors()
     }
 }
