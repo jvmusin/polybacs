@@ -29,7 +29,8 @@ class ProblemController(
     @GetMapping
     suspend fun getProblem(@PathVariable problemId: Int): ProblemInfo {
         val problemInfo = polygonService.getProblemInfo(problemId)
-        return problemInfo.toDto()
+        val problem = polygonService.getProblems().single { it.id == problemId }
+        return problemInfo.toDto(problem)
     }
 
     @PostMapping
