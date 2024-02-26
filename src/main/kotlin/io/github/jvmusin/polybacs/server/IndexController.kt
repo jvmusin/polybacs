@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 class IndexController {
-    @RequestMapping(value = ["/", "/problems/**"])
+    @RequestMapping(value = ["/problems/**"])
     fun index(): String {
-        return "forward:index.html"
+        return "/index.html"
     }
 }
