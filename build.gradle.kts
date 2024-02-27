@@ -7,7 +7,7 @@ plugins {
 	id("org.graalvm.buildtools.native") version "0.9.28"
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
-	kotlin("plugin.serialization") version "1.6.21" // added by me
+	kotlin("plugin.serialization") version "1.9.22" // added by me
 }
 
 group = "io.github.jvmusin"
