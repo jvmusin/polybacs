@@ -49,7 +49,7 @@ dependencies {
 
 	implementation("com.squareup.okhttp3:logging-interceptor:$okhttp3Version")
 	implementation("com.squareup.okhttp3:okhttp:$okhttp3Version")
-	implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
+	implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
 
 
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}")
