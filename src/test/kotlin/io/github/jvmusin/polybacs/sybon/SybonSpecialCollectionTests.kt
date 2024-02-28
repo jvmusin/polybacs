@@ -5,10 +5,15 @@ import io.github.jvmusin.polybacs.bacs.BacsArchiveService
 import io.github.jvmusin.polybacs.polygon.PolygonService
 import io.github.jvmusin.polybacs.sybon.api.SybonArchiveApi
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import kotlinx.coroutines.delay
 import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 @SpringBootTest
 class SybonSpecialCollectionTests(
@@ -18,19 +23,37 @@ class SybonSpecialCollectionTests(
 ) : StringSpec({
     val specialCollectionId = 10023
     val polygonProblemId = 147360
-    val properties = AdditionalProblemProperties(suffix = LocalDateTime.now().run { "-$hour-$minute-test-rustam" })
+    val properties = AdditionalProblemProperties(
+        suffix = LocalDateTime.now().format(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
+        ) + "-polybacs-test-rustam"
+    )
 
     "Full cycle" {
         val irProblem = polygonService.downloadProblem(polygonProblemId, includeTests = true)
         val fullName = bacsArchiveService.uploadProblem(irProblem, properties)
-        delay(3.minutes) // wait until the problem is indexed by BACS
-        val sybonProblemId = sybonArchiveApi.importProblem(specialCollectionId, fullName)
-        println(fullName)
-        println(sybonProblemId)
-        println(sybonArchiveApi.getCollection(specialCollectionId))
+        delay(2.minutes) // wait for the problem to appear in the archive
+        val sybonProblemId = repeat(3.minutes, 10.seconds) {
+            sybonArchiveApi.importProblem(specialCollectionId, fullName)
+        }
+        println("Problem full name: $fullName")
+        println("Sybon problem id: $sybonProblemId")
     }
 
-    "Print special collection" {
-        println(sybonArchiveApi.getCollection(specialCollectionId))
+    "Get special collection" {
+        sybonArchiveApi.getCollection(specialCollectionId).problems.shouldNotBeEmpty()
     }
 })
+
+private suspend inline fun <T> repeat(timeout: Duration, delay: Duration, action: () -> T): T {
+    val start = System.currentTimeMillis()
+    while (true) {
+        try {
+            return action()
+        } catch (e: Exception) {
+            val now = System.currentTimeMillis()
+            if (now - start > timeout.toJavaDuration().toMillis()) throw e
+            delay(delay)
+        }
+    }
+}
