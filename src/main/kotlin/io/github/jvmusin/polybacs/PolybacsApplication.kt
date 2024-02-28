@@ -75,17 +75,4 @@ class WebSocketConfig(
                 isCreateSession = true
             })
     }
-
-    @Bean
-    fun tomcatContextCustomizer(): TomcatContextCustomizer {
-        val cookieProcessor = Rfc6265CookieProcessor()
-        cookieProcessor.setSameSiteCookies("None")
-        cookieProcessor.partitioned = true
-        // Would be great if we could set "Secure" here and not in application.yaml
-        // For the Partitioned support see https://github.com/spring-projects/spring-framework/issues/31454
-        return TomcatContextCustomizer { context: Context ->
-            context.usePartitioned = true
-            context.cookieProcessor = cookieProcessor
-        }
-    }
 }
