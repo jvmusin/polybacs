@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import org.springframework.web.service.invoker.HttpServiceProxyFactory
 import org.springframework.web.service.invoker.createClient
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.URLDecoder
 
 @Component
 class SybonApiFactory(
@@ -17,7 +18,11 @@ class SybonApiFactory(
     private inline fun <reified T : Any> createApi(): T {
         val webClientBuilder = WebClient.builder()
             .filter { request, next ->
-                val newUri = UriComponentsBuilder.fromUri(request.url()).queryParam("api_key", apiKey).build().toUri()
+                val initialUrl = URLDecoder.decode(request.url().toString(), Charsets.UTF_8)
+                val newUri = UriComponentsBuilder.fromUriString(initialUrl)
+                    .queryParam("api_key", apiKey)
+                    .build()
+                    .toUri()
                 val newRequest = ClientRequest.from(request).url(newUri).build()
                 next.exchange(newRequest)
             }.codecs {
