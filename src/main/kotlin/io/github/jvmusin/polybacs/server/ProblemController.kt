@@ -1,6 +1,5 @@
 package io.github.jvmusin.polybacs.server
 
-import io.github.jvmusin.polybacs.util.ToastSender
 import io.github.jvmusin.polybacs.WebSocketConnectionKeeper
 import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
 import io.github.jvmusin.polybacs.api.ProblemInfo
@@ -12,6 +11,7 @@ import io.github.jvmusin.polybacs.polygon.PolygonService
 import io.github.jvmusin.polybacs.polygon.api.toDto
 import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadingException
 import io.github.jvmusin.polybacs.sybon.toZipArchive
+import io.github.jvmusin.polybacs.util.ToastSender
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.HttpStatus
@@ -33,8 +33,7 @@ class ProblemController(
         return problemInfo.toDto(problem)
     }
 
-    @PostMapping
-    @RequestMapping("/download")
+    @PostMapping("/download")
     suspend fun download(
         @PathVariable problemId: Int,
         fullName: String,
@@ -53,8 +52,7 @@ class ProblemController(
         response.outputStream.use { zip.toFile().inputStream().copyTo(it) }
     }
 
-    @PostMapping
-    @RequestMapping("/transfer")
+    @PostMapping("/transfer")
     suspend fun transfer(
         @PathVariable problemId: Int,
         fullName: String,
