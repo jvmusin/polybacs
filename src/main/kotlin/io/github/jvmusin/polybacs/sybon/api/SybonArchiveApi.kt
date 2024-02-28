@@ -1,29 +1,31 @@
 package io.github.jvmusin.polybacs.sybon.api
 
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.service.annotation.GetExchange
+import org.springframework.web.service.annotation.HttpExchange
+import org.springframework.web.service.annotation.PostExchange
 
+@HttpExchange("https://archive.sybon.org/api/")
 interface SybonArchiveApi {
-    @GET("Collections")
+    @GetExchange("Collections")
     suspend fun getCollections(
-        @Query("Offset") offset: Int = 0,
-        @Query("Limit") limit: Int = 100,
+        @RequestParam("Offset") offset: Int = 0,
+        @RequestParam("Limit") limit: Int = 100,
     ): List<SybonCollection>
 
-    @GET("Collections/{collectionId}")
-    suspend fun getCollection(@Path("collectionId") collectionId: Int): SybonCollection
+    @GetExchange("Collections/{collectionId}")
+    suspend fun getCollection(@PathVariable("collectionId") collectionId: Int): SybonCollection
 
-    @GET("Problems/{problemId}")
-    suspend fun getProblem(@Path("problemId") problemId: Int): SybonProblem
+    @GetExchange("Problems/{problemId}")
+    suspend fun getProblem(@PathVariable("problemId") problemId: Int): SybonProblem
 
-    @GET("Problems/{problemId}/statement")
-    suspend fun getProblemStatementUrl(@Path("problemId") problemId: Int): String
+    @GetExchange("Problems/{problemId}/statement")
+    suspend fun getProblemStatementUrl(@PathVariable("problemId") problemId: Int): String
 
-    @POST("Collections/{collectionId}/problems")
+    @PostExchange("Collections/{collectionId}/problems")
     suspend fun importProblem(
-        @Path("collectionId") collectionId: Int,
-        @Query("internalProblemId") internalProblemId: String,
+        @PathVariable("collectionId") collectionId: Int,
+        @RequestParam("internalProblemId") internalProblemId: String,
     ): Int
 }
