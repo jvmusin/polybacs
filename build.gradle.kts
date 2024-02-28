@@ -27,7 +27,7 @@ val retrofitVersion = "2.9.0"
 val okhttp3Version = "5.0.0-alpha.12"
 val ktorVersion = "1.6.8"
 val serializationVersion = "1.3.2"
-val jsoupVersion = "1.14.3"
+val jsoupVersion = "1.17.2"
 val kotestVersion = "5.8.0"
 
 dependencies {
