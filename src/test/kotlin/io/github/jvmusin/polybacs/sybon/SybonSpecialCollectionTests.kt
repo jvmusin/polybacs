@@ -32,11 +32,11 @@ class SybonSpecialCollectionTests(
     "Full cycle" {
         val irProblem = polygonService.downloadProblem(polygonProblemId, includeTests = true)
         val fullName = bacsArchiveService.uploadProblem(irProblem, properties)
+        println("Problem full name: $fullName")
         delay(2.minutes) // wait for the problem to appear in the archive
         val sybonProblemId = repeat(3.minutes, 10.seconds) {
             sybonArchiveApi.importProblem(specialCollectionId, fullName)
         }
-        println("Problem full name: $fullName")
         println("Sybon problem id: $sybonProblemId")
     }
 

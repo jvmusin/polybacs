@@ -55,11 +55,10 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${coroutinesVersion}")
 
-	implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
-	implementation("io.ktor:ktor-client-auth-jvm:$ktorVersion")
-	implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-	implementation("io.ktor:ktor-client-features:$ktorVersion")
-
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	testImplementation("io.projectreactor:reactor-test")
 
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
 	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion")
