@@ -48,11 +48,11 @@ class BacsArchiveService(
             .retrieve()
             .toEntity<String>()
             .awaitSingle()
-        val content = response.body
         if (!response.statusCode.is2xxSuccessful) {
             throw BacsProblemUploadException("Code ${response.statusCode}, Message ${response.body}")
         }
-        requireNotNull(content)
+
+        val content = requireNotNull(response.body)
 
         if (content.contains("reserved: *$PENDING_IMPORT".toRegex())) return
 
