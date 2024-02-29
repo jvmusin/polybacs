@@ -4,7 +4,6 @@ import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemExcept
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchTestGroupException
 import io.github.jvmusin.polybacs.polygon.exception.response.PolygonResponseException
 import io.github.jvmusin.polybacs.polygon.exception.response.TestGroupsDisabledException
-import kotlinx.serialization.Serializable
 
 /**
  * Polygon response.
@@ -18,7 +17,6 @@ import kotlinx.serialization.Serializable
  * @property result The result of the request or *null* if request failed.
  * @property comment The reason of failure or *null* if request succeeded.
  */
-@Serializable
 data class PolygonResponse<T>(
     val status: String,
     val result: T? = null,

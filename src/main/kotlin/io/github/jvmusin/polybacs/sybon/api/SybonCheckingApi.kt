@@ -1,23 +1,25 @@
 package io.github.jvmusin.polybacs.sybon.api
 
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.service.annotation.GetExchange
+import org.springframework.web.service.annotation.HttpExchange
+import org.springframework.web.service.annotation.PostExchange
 
+@HttpExchange("https://checking.sybon.org/api/")
 interface SybonCheckingApi {
-    @GET("Compilers")
+    @GetExchange("Compilers")
     suspend fun getCompilers(): List<SybonCompiler>
 
-    @POST("Submits/send")
-    suspend fun submitSolution(@Body solution: SybonSubmitSolution): Int
+    @PostExchange("Submits/send")
+    suspend fun submitSolution(@RequestBody solution: SybonSubmitSolution): Int
 
-    @POST("Submits/sendall")
-    suspend fun submitSolutions(@Body solutions: List<SybonSubmitSolution>): List<Int>
+    @PostExchange("Submits/sendall")
+    suspend fun submitSolutions(@RequestBody solutions: List<SybonSubmitSolution>): List<Int>
 
-    @POST("Submits/rejudge")
-    suspend fun rejudge(@Body ids: List<Int>)
+    @PostExchange("Submits/rejudge")
+    suspend fun rejudge(@RequestBody ids: List<Int>)
 
-    @GET("Submits/results")
-    suspend fun getResults(@Query("ids") ids: String): List<SybonSubmissionResult>
+    @GetExchange("Submits/results")
+    suspend fun getResults(@RequestParam("ids") ids: String): List<SybonSubmissionResult>
 }

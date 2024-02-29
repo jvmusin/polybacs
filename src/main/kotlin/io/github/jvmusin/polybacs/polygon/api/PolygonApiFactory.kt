@@ -1,142 +1,95 @@
 package io.github.jvmusin.polybacs.polygon.api
 
 import io.github.jvmusin.polybacs.polygon.PolygonConfig
-import io.github.jvmusin.polybacs.retrofit.RetrofitClientFactory
-import io.github.jvmusin.polybacs.retrofit.bufferedBody
-import io.github.jvmusin.polybacs.util.RetryPolicy
 import io.github.jvmusin.polybacs.util.sha512
-import kotlinx.coroutines.runBlocking
-import okhttp3.Interceptor
-import okhttp3.Response
-import org.slf4j.LoggerFactory.getLogger
-import kotlin.time.Duration.Companion.minutes
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.codec.ClientCodecConfigurer
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.support.WebClientAdapter
+import org.springframework.web.service.invoker.HttpServiceProxyFactory
+import org.springframework.web.service.invoker.createClient
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URLDecoder
 
-/**
- * PolygonAPI factory.
- *
- * Used to create [PolygonApi].
- *
- * @property config Polygon API configuration.
- */
-class PolygonApiFactory(private val config: PolygonConfig) {
-
+class PolygonApiFactory(
+    private val config: PolygonConfig,
+) {
     /**
-     * ApiSig adding interceptor.
+     * Changes response code from `400` to `200`.
      *
-     * Adds *apiSig* to every request made to Polygon API.
+     * Used to treat code `400` responses as code `200` responses.
      *
-     * Uses [PolygonConfig.apiKey] and [PolygonConfig.secret] to change the request URL.
-     */
-    private inner class ApiSigAddingInterceptor : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val original = chain.request()
-            val originalUrl = original.url
-
-            val time = System.currentTimeMillis() / 1000
-            val prefix = "abcdef"
-            val method = originalUrl.pathSegments[1]
-
-            val almostDoneUrl = originalUrl.newBuilder()
-                .addQueryParameter("apiKey", config.apiKey)
-                .addQueryParameter("time", time.toString())
-                .build()
-
-            val middle = almostDoneUrl.queryParameterNames
-                .map { it to almostDoneUrl.queryParameter(it) }
-                .sortedWith(compareBy({ it.first }, { it.second }))
-                .joinToString("&") { "${it.first}=${it.second}" }
-            val toHash = "$prefix/$method?$middle#${config.secret}"
-            val apiSig = prefix + toHash.sha512()
-
-            val finalUrl = almostDoneUrl.newBuilder().addQueryParameter("apiSig", apiSig).build()
-            return chain.proceed(original.newBuilder().url(finalUrl).build())
-        }
-    }
-
-    /**
-     * Polygon retry interceptor.
-     *
-     * Retries the request while [needRepeat] returns *true*.
-     *
-     * Duration of time it tries to repeat the request and delay between sequential requests
-     * are configured via [retryPolicy].
-     *
-     * @property retryPolicy Configures duration of time it tries to repeat the request
-     *                       and delays between sequential requests.
-     */
-    private abstract class PolygonRetryInterceptor(
-        private val retryPolicy: RetryPolicy = RetryPolicy(10.minutes, 1.minutes),
-    ) : Interceptor {
-        abstract fun needRepeat(response: Response): Boolean
-
-        override fun intercept(chain: Interceptor.Chain) = runBlocking {
-            var done = 0
-            retryPolicy.evalWhileFails({ res ->
-                if (needRepeat(res)) {
-                    val body = res.bufferedBody()?.string() ?: "NO BODY"
-                    getLogger(javaClass).warn(
-                        "Polygon API responded with code ${res.code} and body '$body'\n" +
-                                "Now sleep for ${retryPolicy.retryAfter} and make try #${++done + 1}"
-                    )
-                    false
-                } else true
-            }) { chain.proceed(chain.request()) }
-        }
-    }
-
-    /**
-     * Too many requests retry interceptor.
-     *
-     * Retries the request if Polygon API said TOO MANY REQUESTS.
-     */
-    private class TooManyRequestsRetryInterceptor : PolygonRetryInterceptor() {
-        companion object {
-            const val TOO_MANY_REQUESTS_MESSAGE = "Too many requests. Please, wait few seconds and try again"
-        }
-
-        override fun needRepeat(response: Response): Boolean {
-            return response.code == 400 && response.bufferedBody()?.string() == TOO_MANY_REQUESTS_MESSAGE
-        }
-    }
-
-    /**
-     * Server error retry interceptor.
-     *
-     * Retries the request if Polygon API responded with 5xx code.
-     */
-    private class ServerErrorRetryInterceptor : PolygonRetryInterceptor() {
-        override fun needRepeat(response: Response) = response.code in 500..599
-    }
-
-    /**
-     * Changes response code from 400 to 200.
-     *
-     * Used to treat *code 400* responses as *code 200* responses.
-     *
-     * Polygon API returns code *400* when something is wrong,
+     * Polygon API returns code `400` when something is wrong,
      * but it also returns the message about that in request body,
-     * so we will have *null* result and *non-null* message
+     * so we will have `null` result and `non-null` message
      * in the [PolygonResponse].
      */
-    private class Code400To200Interceptor : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val result = chain.proceed(chain.request())
-            return when (result.code) {
-                400 -> result.newBuilder().code(200).build()
-                else -> result
+    private val responseCode400to200Filter = ExchangeFilterFunction { request, next ->
+        next.exchange(request).map {
+            when (it.statusCode()) {
+                HttpStatus.BAD_REQUEST -> it.mutate().statusCode(HttpStatus.OK).build()
+                else -> it
             }
         }
     }
 
     /**
-     * Creates PolygonAPI using configuration data from [config].
+     * Changes response content type to *application/json*.
      *
-     * @return New PolygonAPI instance.
+     * Polygon API returns `text/html` content type, but it's actually `application/json`.
      */
-    fun create(): PolygonApi = RetrofitClientFactory.create("https://polygon.codeforces.com/api/") {
-        addInterceptor(Code400To200Interceptor())
-        addInterceptor(ServerErrorRetryInterceptor())
-        addInterceptor(TooManyRequestsRetryInterceptor())
-        addInterceptor(ApiSigAddingInterceptor())
+    private val fixResponseContentTypeFilter = ExchangeFilterFunction { request, next ->
+        next.exchange(request).map {
+            it.mutate().headers { headers -> headers.contentType = MediaType.APPLICATION_JSON }.build()
+        }
+    }
+
+    private val insertApiSigFilter = ExchangeFilterFunction { request, next ->
+        val time = System.currentTimeMillis() / 1000
+        val prefix = "abcdef"
+        val method = request.url().path.removePrefix("/api/")
+
+        val decodedUrl = URLDecoder.decode(request.url().toString(), Charsets.UTF_8)
+        val builder = UriComponentsBuilder.fromUriString(decodedUrl)
+            .queryParam("apiKey", config.apiKey)
+            .queryParam("time", time.toString())
+            .cloneBuilder()
+
+        val middle = builder.build().queryParams
+            .map { it.key to it.value.single() }
+            .sortedWith(compareBy({ it.first }, { it.second }))
+            .joinToString("&") { "${it.first}=${it.second}" }
+        val toHash = "$prefix/$method?$middle#${config.secret}"
+        val apiSig = prefix + toHash.sha512()
+
+        val finalUrl = builder.queryParam("apiSig", apiSig).build().toUri()
+        val newRequest = ClientRequest.from(request).url(finalUrl).build()
+        next.exchange(newRequest)
+    }
+
+    private val maxInMemorySizeCodecConfigurer = { codecs: ClientCodecConfigurer ->
+        codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) // 16 MB
+    }
+
+    private inline fun <reified T : Any> createApi(): T {
+        val webClientBuilder = WebClient.builder()
+            .codecs(maxInMemorySizeCodecConfigurer)
+            .filter(fixResponseContentTypeFilter)
+            .filter(responseCode400to200Filter)
+            .filter(insertApiSigFilter)
+        // TODO: Add 500 and 429 retry filters
+        //  429 is actually 400 with text in the body
+        //  TOO_MANY_REQUESTS_MESSAGE = "Too many requests. Please, wait few seconds and try again"
+        return HttpServiceProxyFactory
+            .builderFor(WebClientAdapter.create(webClientBuilder.build()))
+            .build()
+            .createClient<T>()
+    }
+
+    fun create(): PolygonApi {
+        return createApi()
     }
 }

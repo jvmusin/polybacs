@@ -1,5 +1,6 @@
 package io.github.jvmusin.polybacs.sybon
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.jvmusin.polybacs.sybon.api.SybonCheckingApi
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult.BuildResult
@@ -12,8 +13,6 @@ import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
@@ -77,7 +76,7 @@ class SybonCheckingApiTests(api: SybonCheckingApi) : StringSpec({
     "Test getResults test groups results for accepted C++ solution" {
         val submissionId = 466994
         val result = api.getResults(submissionId.toString()).single()
-        println(Json { prettyPrint = true }.encodeToString(result))
+        println(jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(result))
     }
 }) {
     companion object {

@@ -1,46 +1,44 @@
 package io.github.jvmusin.polybacs.sybon.api
 
-import io.github.jvmusin.polybacs.retrofit.RetrofitClientFactory
-import okhttp3.Interceptor
-import okhttp3.Response
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.codec.ClientCodecConfigurer
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.ClientRequest
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.support.WebClientAdapter
+import org.springframework.web.service.invoker.HttpServiceProxyFactory
+import org.springframework.web.service.invoker.createClient
+import org.springframework.web.util.UriComponentsBuilder
 
-/**
- * Sybon API factory.
- *
- * Used to create [SybonArchiveApi] and [SybonCheckingApi].
- *
- * It uses [RetrofitClientFactory] under the hood to make the actual requests.
- *
- * @constructor Creates Sybon API factory.
- * @property config Sybon configuration, used to configure proper *apiKey* and system urls.
- */
 @Component
 class SybonApiFactory(
     @Value("\${sybon.apiKey}")
-    private val apiKey: String,
+    apiKey: String,
 ) {
-
-    /**
-     * ApiKey injector interceptor
-     *
-     * Injects *apiKey* to every request made to the API.
-     *
-     * @constructor Creates *apiKey* injector interceptor.
-     */
-    private inner class ApiKeyInjectorInterceptor : Interceptor {
-        override fun intercept(chain: Interceptor.Chain): Response {
-            val newUrl = chain.request().url.newBuilder().addQueryParameter("api_key", apiKey).build()
-            val newRequest = chain.request().newBuilder().url(newUrl).build()
-            return chain.proceed(newRequest)
-        }
+    private val insertApiKeyFilter = ExchangeFilterFunction { request, next ->
+        val newUri = UriComponentsBuilder.fromUri(request.url())
+            .queryParam("api_key", apiKey)
+            .build(true) // do not encode
+            .toUri()
+        val newRequest = ClientRequest.from(request).url(newUri).build()
+        next.exchange(newRequest)
     }
 
-    private inline fun <reified T> createApi(url: String): T = RetrofitClientFactory.create(url) {
-        addInterceptor(ApiKeyInjectorInterceptor())
+    private val maxInMemorySizeCodecConfigurer = { codecs: ClientCodecConfigurer ->
+        codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) // 16 MB
     }
 
-    fun createArchiveApi(): SybonArchiveApi = createApi("https://archive.sybon.org/api/")
-    fun createCheckingApi(): SybonCheckingApi = createApi("https://checking.sybon.org/api/")
+    private inline fun <reified T : Any> createApi(): T {
+        val webClientBuilder = WebClient.builder()
+            .filter(insertApiKeyFilter)
+            .codecs(maxInMemorySizeCodecConfigurer)
+        return HttpServiceProxyFactory
+            .builderFor(WebClientAdapter.create(webClientBuilder.build()))
+            .build()
+            .createClient<T>()
+    }
+
+    fun createArchiveApi(): SybonArchiveApi = createApi()
+    fun createCheckingApi(): SybonCheckingApi = createApi()
 }

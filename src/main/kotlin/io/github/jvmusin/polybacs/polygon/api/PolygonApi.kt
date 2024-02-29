@@ -1,137 +1,143 @@
 package io.github.jvmusin.polybacs.polygon.api
 
-import okhttp3.ResponseBody
-import retrofit2.http.POST
-import retrofit2.http.Query
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.service.annotation.HttpExchange
+import org.springframework.web.service.annotation.PostExchange
 
+/**
+ * Polygon API.
+ *
+ * Provides access to Polygon API.
+ */
+@HttpExchange("https://polygon.codeforces.com/api/")
 @Suppress("unused")
 interface PolygonApi {
     companion object {
         const val DEFAULT_TESTSET = "tests"
     }
 
-    @POST("problems.list")
+    @PostExchange("problems.list")
     suspend fun getProblems(
-        @Query("showDeleted") showDeleted: Boolean = false,
-        @Query("id") id: Int? = null,
-        @Query("name") name: String? = null,
-        @Query("owner") owner: String? = null
+        @RequestParam("showDeleted") showDeleted: Boolean = false,
+        @RequestParam("id", required = false) id: Int? = null,
+        @RequestParam("name", required = false) name: String? = null,
+        @RequestParam("owner", required = false) owner: String? = null,
     ): PolygonResponse<List<Problem>>
 
-    @POST("problem.info")
+    @PostExchange("problem.info")
     suspend fun getProblemInfo(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<ProblemInfo>
 
-    @POST("problem.statements")
+    @PostExchange("problem.statements")
     suspend fun getStatements(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<Map<String, Statement>>
 
-    @POST("problem.statementResources")
+    @PostExchange("problem.statementResources")
     suspend fun getStatementResources(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<List<File>>
 
-    @POST("problem.checker")
+    @PostExchange("problem.checker")
     suspend fun getCheckerName(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<String>
 
-    @POST("problem.validator")
+    @PostExchange("problem.validator")
     suspend fun getValidatorName(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<String>
 
-    @POST("problem.interactor")
+    @PostExchange("problem.interactor")
     suspend fun getInteractorName(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<String>
 
-    @POST("problem.files")
+    @PostExchange("problem.files")
     suspend fun getFiles(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<Map<String, List<File>>>
 
-    @POST("problem.solutions")
+    @PostExchange("problem.solutions")
     suspend fun getSolutions(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<List<Solution>>
 
-    @POST("problem.viewFile")
+    @PostExchange("problem.viewFile")
     suspend fun getFile(
-        @Query("problemId") problemId: Int,
-        @Query("type") type: File.Type,
-        @Query("name") name: String
-    ): ResponseBody
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("type") type: File.Type,
+        @RequestParam("name") name: String,
+    ): ByteArray // TODO: Check with documentation
 
-    @POST("problem.viewSolution")
+    @PostExchange("problem.viewSolution")
     suspend fun getSolutionContent(
-        @Query("problemId") problemId: Int,
-        @Query("name") name: String
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("name") name: String,
     ): String
 
-    @POST("problem.script")
+    @PostExchange("problem.script")
     suspend fun getScript(
-        @Query("problemId") problemId: Int,
-        @Query("testset") name: String
-    ): ResponseBody
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("testset") testset: String,
+    ): ByteArray // TODO: Check with documentation
 
-    @POST("problem.tests")
+    @PostExchange("problem.tests")
     suspend fun getTests(
-        @Query("problemId") problemId: Int,
-        @Query("testset") testSet: String = DEFAULT_TESTSET
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("testset") testSet: String = DEFAULT_TESTSET,
     ): PolygonResponse<List<PolygonTest>>
 
-    @POST("problem.testInput")
+    @PostExchange("problem.testInput")
     suspend fun getTestInput(
-        @Query("problemId") problemId: Int,
-        @Query("testIndex") testIndex: Int,
-        @Query("testset") testSet: String = DEFAULT_TESTSET
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("testIndex") testIndex: Int,
+        @RequestParam("testset") testSet: String = DEFAULT_TESTSET,
     ): String
 
-    @POST("problem.testAnswer")
+    @PostExchange("problem.testAnswer")
     suspend fun getTestAnswer(
-        @Query("problemId") problemId: Int,
-        @Query("testIndex") testIndex: Int,
-        @Query("testset") testSet: String = DEFAULT_TESTSET
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("testIndex") testIndex: Int,
+        @RequestParam("testset") testSet: String = DEFAULT_TESTSET,
     ): String
 
-    @POST("problem.viewTestGroup")
+    @PostExchange("problem.viewTestGroup")
     suspend fun getTestGroup(
-        @Query("problemId") problemId: Int,
-        @Query("group") group: String? = null,
-        @Query("testset") testset: String = DEFAULT_TESTSET
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("group", required = false) group: String? = null,
+        @RequestParam("testset") testset: String = DEFAULT_TESTSET, // TODO: Check if default value works
     ): PolygonResponse<List<TestGroup>>
 
-    @POST("problem.viewTags")
+    @PostExchange("problem.viewTags")
     suspend fun getTags(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<List<String>>
 
-    @POST("problem.viewGeneralDescription")
+    @PostExchange("problem.viewGeneralDescription")
     suspend fun getGeneralDescription(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<String>
 
-    @POST("problem.viewGeneralTutorial")
+    @PostExchange("problem.viewGeneralTutorial")
     suspend fun getGeneralTutorial(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<String>
 
-    @POST("problem.packages")
+    @PostExchange("problem.packages")
     suspend fun getPackages(
-        @Query("problemId") problemId: Int
+        @RequestParam("problemId") problemId: Int,
     ): PolygonResponse<List<Package>>
 
-    @POST("problem.package")
+    @PostExchange("problem.package")
     suspend fun getPackage(
-        @Query("problemId") problemId: Int,
-        @Query("packageId") packageId: Int
-    ): ResponseBody
+        @RequestParam("problemId") problemId: Int,
+        @RequestParam("packageId") packageId: Int,
+    ): ByteArray // TODO: Check if it works
 
-    @POST("contest.problems")
+    @PostExchange("contest.problems")
     suspend fun getContestProblems(
-        @Query("contestId") contestId: Int
+        @RequestParam("contestId") contestId: Int,
     ): PolygonResponse<List<Problem>>
 }

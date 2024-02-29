@@ -20,7 +20,7 @@ suspend fun PolygonApi.downloadPackage(problemId: Int, packageId: Int): Path {
     if (packagesCache.containsKey(packageId)) return packagesCache[packageId]!!
     val destination = Paths.get("polygon-problems").resolve("id$problemId-package$packageId-${UUID.randomUUID()}")
     val archivePath = Files.createTempDirectory("${destination.fileName}-").resolve("archive.zip")
-    archivePath.writeBytes(getPackage(problemId, packageId).bytes())
+    archivePath.writeBytes(getPackage(problemId, packageId))
     ZipFile(archivePath.toFile()).use { it.extract(destination) }
     Files.delete(archivePath)
     return destination.also { packagesCache[packageId] = it }
