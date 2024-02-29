@@ -4,7 +4,6 @@ import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemExcept
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchTestGroupException
 import io.github.jvmusin.polybacs.polygon.exception.response.PolygonResponseException
 import io.github.jvmusin.polybacs.polygon.exception.response.TestGroupsDisabledException
-import kotlinx.serialization.Serializable
 
 /**
  * Polygon response.
