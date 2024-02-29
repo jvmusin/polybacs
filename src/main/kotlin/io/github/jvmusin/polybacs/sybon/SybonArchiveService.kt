@@ -4,7 +4,7 @@ import io.github.jvmusin.polybacs.sybon.api.SybonArchiveApi
 import io.github.jvmusin.polybacs.sybon.api.SybonProblem
 import io.github.jvmusin.polybacs.util.RetryPolicy
 import org.slf4j.LoggerFactory.getLogger
-import retrofit2.HttpException
+import org.springframework.web.reactive.function.client.WebClientResponseException
 
 /** Service used to communicate with Sybon Archive via [SybonArchiveApi]).
  *
@@ -38,12 +38,12 @@ class SybonArchiveService(
             try {
                 sybonArchiveApi.importProblem(collectionId, bacsProblemId)
                 getLogger(javaClass).debug("Problem import into sybon succeed")
-            } catch (e: HttpException) {
-                if (e.code() == 500) {
+            } catch (e: WebClientResponseException) {
+                if (e.statusCode.is5xxServerError) {
                     getLogger(javaClass)
                         .debug("Sybon returned 500 error on problem import, will try again")
                     null
-                } else throw SybonProblemImportException("Problem import into sybon failed: ${e.message()}", e)
+                } else throw SybonProblemImportException("Problem import into sybon failed: ${e.message}", e)
             }
         }
 

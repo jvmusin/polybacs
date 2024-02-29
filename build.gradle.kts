@@ -22,8 +22,6 @@ repositories {
 }
 
 val coroutinesVersion = "1.8.0"
-val retrofitVersion = "2.9.0"
-val okhttp3Version = "5.0.0-alpha.12"
 val ktorVersion = "1.6.8"
 val serializationVersion = "1.3.2"
 val jsoupVersion = "1.17.2"
@@ -39,13 +37,6 @@ dependencies {
 	implementation("org.springframework.session:spring-session-core") // TODO: Do we need this?
 	developmentOnly("org.springframework.boot:spring-boot-devtools") // TODO: Does it work?
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-	implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
-	implementation("com.squareup.retrofit2:converter-scalars:$retrofitVersion")
-
-	implementation("com.squareup.okhttp3:logging-interceptor:$okhttp3Version")
-	implementation("com.squareup.okhttp3:okhttp:$okhttp3Version")
-	implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
 
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${coroutinesVersion}")
