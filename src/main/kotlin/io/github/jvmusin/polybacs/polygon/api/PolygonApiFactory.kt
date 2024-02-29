@@ -4,6 +4,7 @@ import io.github.jvmusin.polybacs.polygon.PolygonConfig
 import io.github.jvmusin.polybacs.util.sha512
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.codec.ClientCodecConfigurer
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 import org.springframework.web.reactive.function.client.WebClient
@@ -69,8 +70,13 @@ class PolygonApiFactory(
         next.exchange(newRequest)
     }
 
+    private val maxInMemorySizeCodecConfigurer = { codecs: ClientCodecConfigurer ->
+        codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) // 16 MB
+    }
+
     private inline fun <reified T : Any> createApi(): T {
         val webClientBuilder = WebClient.builder()
+            .codecs(maxInMemorySizeCodecConfigurer)
             .filter(fixResponseContentTypeFilter)
             .filter(responseCode400to200Filter)
             .filter(insertApiSigFilter)
