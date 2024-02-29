@@ -80,7 +80,7 @@ interface PolygonApi {
     @PostExchange("problem.script")
     suspend fun getScript(
         @RequestParam("problemId") problemId: Int,
-        @RequestParam("testset") name: String,
+        @RequestParam("testset") testset: String,
     ): ByteArray // TODO: Check with documentation
 
     @PostExchange("problem.tests")
