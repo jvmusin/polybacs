@@ -2,9 +2,6 @@
 
 package io.github.jvmusin.polybacs.polygon.api
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class Problem(
     val id: Int,
     val owner: String,
@@ -16,7 +13,6 @@ data class Problem(
     val latestPackage: Int? = null,
     val modified: Boolean,
 ) {
-    @Serializable
     enum class AccessType {
         READ,
         WRITE,
@@ -33,7 +29,6 @@ data class Problem(
  * @property timeLimit Time limit in milliseconds.
  * @property memoryLimit Memory limit in megabytes.
  */
-@Serializable
 data class ProblemInfo(
     val inputFile: String,
     val outputFile: String,
@@ -42,7 +37,6 @@ data class ProblemInfo(
     val memoryLimit: Int,
 )
 
-@Serializable
 data class Statement(
     val encoding: String,
     val name: String,
@@ -54,7 +48,6 @@ data class Statement(
     val tutorial: String,
 )
 
-@Serializable
 data class File(
     val name: String,
     val modificationTimeSeconds: Long,
@@ -71,20 +64,17 @@ data class File(
     }
 }
 
-@Serializable
 data class ResourceAdvancedProperties(
     val forTypes: String,
     val main: String,
     val stages: List<StageType>,
     val assets: List<AssetType>,
 ) {
-    @Serializable
     enum class StageType {
         COMPILE,
         RUN
     }
 
-    @Serializable
     enum class AssetType {
         VALIDATOR,
         INTERACTOR,
@@ -93,7 +83,6 @@ data class ResourceAdvancedProperties(
     }
 }
 
-@Serializable
 data class Solution(
     val name: String,
     val modificationTimeSeconds: Int,
@@ -104,7 +93,6 @@ data class Solution(
     val isMain get() = tag == "MA"
 }
 
-@Serializable
 data class PolygonTest(
     val index: Int,
     val manual: Boolean,
@@ -119,21 +107,18 @@ data class PolygonTest(
     val verifyInputOutputForStatements: Boolean? = null,
 )
 
-@Serializable
 data class TestGroup(
     val name: String,
     val pointsPolicy: PointsPolicyType,
     val feedbackPolicy: String, // add enums
     val dependencies: List<String>,
 ) {
-    @Serializable
     enum class PointsPolicyType {
         COMPLETE_GROUP,
         EACH_TEST
     }
 }
 
-@Serializable
 data class Package(
     val id: Int,
     val creationTimeSeconds: Long,
@@ -142,7 +127,6 @@ data class Package(
     val revision: Int,
     val type: String, // https://github.com/Codeforces/polygon-issue-tracking/issues/498
 ) {
-    @Serializable
     enum class State {
         PENDING,
         RUNNING,

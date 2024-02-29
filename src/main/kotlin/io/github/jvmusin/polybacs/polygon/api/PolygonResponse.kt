@@ -18,7 +18,6 @@ import kotlinx.serialization.Serializable
  * @property result The result of the request or *null* if request failed.
  * @property comment The reason of failure or *null* if request succeeded.
  */
-@Serializable
 data class PolygonResponse<T>(
     val status: String,
     val result: T? = null,
