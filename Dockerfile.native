@@ -1,0 +1,15 @@
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y curl zip unzip zlib1g-dev g++
+RUN curl -s "https://get.sdkman.io" | bash && bash -c "source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk install java 23.1.2.r21-nik"
+ENV JAVA_HOME /root/.sdkman/candidates/java/current
+
+WORKDIR /app
+COPY . /app
+RUN --mount=type=secret,id=application_yaml,dst=application.yaml cp application.yaml src/main/resources/application.yaml
+RUN chmod +x gradlew && ./gradlew nativeTest nativeCompile
+
+FROM alpine:latest
+RUN apk add gcompat
+COPY --from=0 /app/build/native/nativeCompile/polybacs app
+ENTRYPOINT ["./app"]

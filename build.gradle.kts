@@ -4,8 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "3.2.3"
 	id("io.spring.dependency-management") version "1.1.4"
-//	id("org.graalvm.buildtools.native") version "0.10.1" // Enable when bellsoft/liberica-native-image-kit-container for JDK 21 is available
-	// https://hub.docker.com/r/bellsoft/liberica-native-image-kit-container/tags?page=1&name=jdk-21
+	id("org.graalvm.buildtools.native") version "0.10.1"
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
 }
