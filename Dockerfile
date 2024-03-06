@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.6
+# syntax = docker/dockerfile:1.7
 
 FROM eclipse-temurin:21.0.2_13-jdk-alpine
 COPY . .
