@@ -42,4 +42,5 @@ out/
 ### Converter ###
 polygon-problems
 sybon-packages
+ready
 src/main/resources/application.yaml
