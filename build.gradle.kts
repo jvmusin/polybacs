@@ -57,3 +57,15 @@ tasks.withType<Test> {
 		exceptionFormat = TestExceptionFormat.FULL
 	}
 }
+
+if (project.hasProperty("buildFrontend")) {
+	val buildVite = tasks.register<Exec>("buildVite") {
+		group = "build"
+		description = "Builds the frontend."
+		commandLine = listOf("sh", "-c", "cd frontend && npm install && npm run build")
+	}
+	tasks.named<ProcessResources>("processResources") {
+		dependsOn(buildVite)
+		exclude("static/index.html")
+	}
+}
