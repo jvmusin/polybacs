@@ -75,7 +75,7 @@ function LimitsCard({ form }: { form: FormType }) {
 function NameAvailabilityBadge({ name }: { name: string }) {
   const available = useNameAvailability(name)
   return (
-    <div className="flex justify-center space-x-2 whitespace-pre font-mono text-lg font-bold">
+    <div className="flex justify-center space-x-2 whitespace-pre font-mono text-lg font-bold lowercase">
       <code>{name}</code>
       {available === undefined ? (
         <Badge color="zinc">
@@ -163,18 +163,27 @@ function MiscCard({ form }: { form: FormType }) {
   )
 }
 
+function formDefaults(info: ProblemInfo): z.infer<typeof FormSchema> {
+  return {
+    timeLimitMillis: info.timeLimitMillis,
+    memoryLimitMegabytes: info.memoryLimitMegabytes,
+    prefix: 'polybacs-',
+    name: info.problem.name,
+    suffix: '',
+    statement: 'HTML',
+  }
+}
+
 function useProblemForm(info: ProblemInfo): FormType {
-  return useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      timeLimitMillis: info.timeLimitMillis,
-      memoryLimitMegabytes: info.memoryLimitMegabytes,
-      prefix: 'polybacs-',
-      name: info.problem.name,
-      suffix: '',
-      statement: 'HTML',
-    },
+    defaultValues: formDefaults(info),
   })
+  const reset = form.reset
+  useEffect(() => {
+    reset(formDefaults(info))
+  }, [reset, info])
+  return form
 }
 
 function Header({ info }: { info: ProblemInfo }) {
