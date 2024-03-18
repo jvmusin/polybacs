@@ -40,7 +40,6 @@ out/
 .kotlin
 
 ### Converter ###
-polygon-problems
 sybon-packages
 ready
 src/main/resources/application.yaml
