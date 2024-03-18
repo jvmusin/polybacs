@@ -67,18 +67,21 @@ export function useNameAvailability(
   return result
 }
 
+type AdditionalProperties = {
+  name: string
+  prefix: string
+  suffix: string
+  timeLimitMillis: number
+  memoryLimitMegabytes: number
+  statementFormat: string
+}
+
 export function downloadProblem({
   problemId,
   additionalProperties,
 }: {
   problemId: number
-  additionalProperties: {
-    prefix: string
-    suffix: string
-    timeLimitMillis: number
-    memoryLimitMegabytes: number
-    statementFormat: string
-  }
+  additionalProperties: AdditionalProperties
 }) {
   fetch(`${baseUrl}/problems/${problemId}/download`, {
     method: 'POST',
@@ -123,13 +126,7 @@ export function transferProblem({
   additionalProperties,
 }: {
   problemId: number
-  additionalProperties: {
-    prefix: string
-    suffix: string
-    timeLimitMillis: number
-    memoryLimitMegabytes: number
-    statementFormat: string
-  }
+  additionalProperties: AdditionalProperties
 }) {
   fetch(`${baseUrl}/problems/${problemId}/transfer`, {
     method: 'POST',
