@@ -7,13 +7,14 @@ import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadi
 import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
 /**
  * Polygon service.
  *
  * Used to communicate to Polygon API.
  */
-@Component
+@Service
 class PolygonService(
     private val polygonApi: PolygonApi,
     private val problemDownloader: PolygonProblemDownloader
