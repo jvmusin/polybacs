@@ -5,9 +5,6 @@ import { defineConfig } from 'vite'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  build: {
-    outDir: '../build/resources/main/static',
-  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
