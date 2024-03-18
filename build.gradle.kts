@@ -57,3 +57,23 @@ tasks.withType<Test> {
 		exceptionFormat = TestExceptionFormat.FULL
 	}
 }
+
+if (project.hasProperty("buildFrontend")) {
+	val buildFrontend = tasks.register<Exec>("buildFrontend") {
+		group = "build"
+		description = "Builds the frontend."
+		commandLine = listOf("sh", "-c", "cd frontend && npm ci && npm run build")
+		dependsOn("compileKotlin")
+	}
+	val copyFrontend = tasks.register<Copy>("copyFrontend") {
+		group = "build"
+		description = "Copies the frontend build to the resources."
+		from("frontend/dist")
+		into("build/resources/main/static")
+		dependsOn(buildFrontend)
+	}
+	tasks.named<ProcessResources>("processResources") {
+		dependsOn(copyFrontend)
+		exclude("static/index.html")
+	}
+}
