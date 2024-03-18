@@ -6,7 +6,6 @@ import io.github.jvmusin.polybacs.polygon.api.PolygonApi
 import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadingException
 import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 /**
