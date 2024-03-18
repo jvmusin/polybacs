@@ -39,6 +39,8 @@ dependencies {
 
     implementation("org.jsoup:jsoup:$jsoupVersion")
 
+    implementation("org.apache.commons:commons-compress:1.26.1") // For reading zip archives from Polygon
+
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-spring:$kotestExtensionsSpringVersion")

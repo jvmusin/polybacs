@@ -4,9 +4,8 @@ import io.github.jvmusin.polybacs.api.StatementFormat
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.ByteArrayInputStream
+import org.apache.commons.compress.archivers.zip.ZipFile
 import java.util.concurrent.ConcurrentHashMap
-import java.util.zip.ZipInputStream
 
 private val packagesCache = ConcurrentHashMap<Int, ByteArray>()
 private val packagesCacheLocks = ConcurrentHashMap<Int, Mutex>()
@@ -20,11 +19,10 @@ private suspend fun PolygonApi.downloadPackageZip(problemId: Int, packageId: Int
 }
 
 suspend fun PolygonApi.getFileFromZipPackage(problemId: Int, packageId: Int, filePath: String): ByteArray? {
-    ZipInputStream(ByteArrayInputStream(downloadPackageZip(problemId, packageId))).use { zipStream ->
-        while (true) {
-            val entry = zipStream.nextEntry ?: return null
-            if (entry.name == filePath) return zipStream.readBytes()
-        }
+    val packageZipBytes = downloadPackageZip(problemId, packageId)
+    ZipFile.Builder().setByteArray(packageZipBytes).get().use {
+        val entry = it.getEntry(filePath) ?: return null
+        return it.getInputStream(entry).readBytes()
     }
 }
 
