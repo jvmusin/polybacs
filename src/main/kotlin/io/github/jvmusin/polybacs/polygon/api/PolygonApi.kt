@@ -134,7 +134,7 @@ interface PolygonApi {
     suspend fun getPackage(
         @RequestParam("problemId") problemId: Int,
         @RequestParam("packageId") packageId: Int,
-    ): ByteArray // TODO: Check if it works
+    ): ByteArray
 
     @PostExchange("contest.problems")
     suspend fun getContestProblems(

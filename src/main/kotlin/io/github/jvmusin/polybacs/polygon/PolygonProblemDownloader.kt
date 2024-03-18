@@ -27,8 +27,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.notExists
-import kotlin.io.path.readText
 
 /**
  * Polygon problem downloader
@@ -164,13 +162,11 @@ class PolygonProblemDownloader(
      */
     private suspend fun downloadChecker(problemId: Int, packageId: Int): IRChecker {
         val name = "check.cpp"
-        val file = polygonApi.downloadPackage(problemId, packageId).resolve(name)
-        if (file.notExists()) {
-            throw CheckerNotFoundException(
+        val file = polygonApi.getFileFromZipPackage(problemId, packageId, name)
+            ?: throw CheckerNotFoundException(
                 "Не найден чекер '$name'. Другие чекеры не поддерживаются"
             )
-        }
-        return IRChecker(name, file.readText())
+        return IRChecker(name, file.decodeToString())
     }
 
     /**

@@ -2,28 +2,30 @@ package io.github.jvmusin.polybacs.polygon.api
 
 import io.github.jvmusin.polybacs.api.StatementFormat
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
-import io.github.jvmusin.polybacs.util.extract
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.io.ByteArrayInputStream
 import java.util.concurrent.ConcurrentHashMap
-import java.util.zip.ZipFile
-import kotlin.io.path.notExists
-import kotlin.io.path.readBytes
-import kotlin.io.path.writeBytes
+import java.util.zip.ZipInputStream
 
-private val packagesCache = ConcurrentHashMap<Int, Path>()
+private val packagesCache = ConcurrentHashMap<Int, ByteArray>()
+private val packagesCacheLocks = ConcurrentHashMap<Int, Mutex>()
 
-@Suppress("BlockingMethodInNonBlockingContext")
-suspend fun PolygonApi.downloadPackage(problemId: Int, packageId: Int): Path {
-    if (packagesCache.containsKey(packageId)) return packagesCache[packageId]!!
-    val destination = Paths.get("polygon-problems").resolve("id$problemId-package$packageId-${UUID.randomUUID()}")
-    val archivePath = Files.createTempDirectory("${destination.fileName}-").resolve("archive.zip")
-    archivePath.writeBytes(getPackage(problemId, packageId))
-    ZipFile(archivePath.toFile()).use { it.extract(destination) }
-    Files.delete(archivePath)
-    return destination.also { packagesCache[packageId] = it }
+private suspend fun PolygonApi.downloadPackageZip(problemId: Int, packageId: Int): ByteArray {
+    return packagesCacheLocks.computeIfAbsent(packageId) { Mutex() }.withLock {
+        packagesCache.getOrPut(packageId) {
+            getPackage(problemId, packageId)
+        }
+    }
+}
+
+suspend fun PolygonApi.getFileFromZipPackage(problemId: Int, packageId: Int, filePath: String): ByteArray? {
+    ZipInputStream(ByteArrayInputStream(downloadPackageZip(problemId, packageId))).use { zipStream ->
+        while (true) {
+            val entry = zipStream.nextEntry ?: return null
+            if (entry.name == filePath) return zipStream.readBytes()
+        }
+    }
 }
 
 suspend fun PolygonApi.getStatementRaw(
@@ -33,13 +35,13 @@ suspend fun PolygonApi.getStatementRaw(
     language: String = "russian",
 ): ByteArray? {
     val formatAsString = format.lowercase
-    val filePath = downloadPackage(problemId, packageId)
-        .resolve("statements")
-        .resolve(".$formatAsString")
-        .resolve(language)
-        .resolve("problem.$formatAsString")
-    if (filePath.notExists()) return null
-    return filePath.readBytes()
+    val path = listOf(
+        "statements",
+        ".$formatAsString",
+        language,
+        "problem.$formatAsString",
+    ).joinToString("/")
+    return getFileFromZipPackage(problemId, packageId, path)
 }
 
 /**
