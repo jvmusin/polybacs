@@ -17,8 +17,8 @@ jobs:
       - name: Set up Node 21
         uses: actions/setup-node@v4
         with:
-          node-version: '21'
-          node-version-file: 'frontend/package-lock.json'
+          node-version: 21
+          cache: 'npm'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
