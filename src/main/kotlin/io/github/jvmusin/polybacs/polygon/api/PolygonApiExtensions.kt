@@ -5,10 +5,11 @@ import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemExcept
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.apache.commons.compress.archivers.zip.ZipFile
+import org.springframework.util.ConcurrentReferenceHashMap
 import java.util.concurrent.ConcurrentHashMap
 
-private val packagesCache = ConcurrentHashMap<Int, ByteArray>()
 private val packagesCacheLocks = ConcurrentHashMap<Int, Mutex>()
+private val packagesCache = ConcurrentReferenceHashMap<Int, ByteArray>()
 
 private suspend fun PolygonApi.downloadPackageZip(problemId: Int, packageId: Int): ByteArray {
     return packagesCacheLocks.computeIfAbsent(packageId) { Mutex() }.withLock {

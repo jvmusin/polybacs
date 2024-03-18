@@ -26,7 +26,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
-import java.util.concurrent.ConcurrentHashMap
+import org.springframework.util.ConcurrentReferenceHashMap
 
 /**
  * Polygon problem downloader
@@ -55,7 +55,7 @@ class PolygonProblemDownloader(
     /**
      * Problems cache.
      */
-    private val cache = ConcurrentHashMap<FullPackageId, IRProblem>()
+    private val cache = ConcurrentReferenceHashMap<FullPackageId, IRProblem>()
 
     /**
      * Returns problem using Polygon API.
