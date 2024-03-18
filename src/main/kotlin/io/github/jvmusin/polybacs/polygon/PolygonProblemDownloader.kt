@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.notExists
 import kotlin.io.path.readText
@@ -34,29 +35,10 @@ import kotlin.io.path.readText
  *
  * Used for downloading problems from Polygon.
  */
-interface PolygonProblemDownloader {
-    /**
-     * Downloads the problem with the given [problemId].
-     *
-     * Tests might be skipped by setting [includeTests].
-     *
-     * @param problemId id of the problem to download.
-     * @param includeTests if true then the problem tests will also be downloaded.
-     * @return The problem with or without tests, depending on [includeTests] parameter.
-     * @throws NoSuchProblemException if the problem does not exist.
-     * @throws AccessDeniedException if not enough rights to download the problem.
-     * @throws ProblemDownloadingException if something gone wrong while downloading the problem.
-     */
-    suspend fun downloadProblem(
-        problemId: Int,
-        includeTests: Boolean,
-        statementFormat: StatementFormat = StatementFormat.PDF,
-    ): IRProblem
-}
-
-class PolygonProblemDownloaderImpl(
+@Component
+class PolygonProblemDownloader(
     private val polygonApi: PolygonApi,
-) : PolygonProblemDownloader {
+) {
 
     /**
      * Full package id.
@@ -391,7 +373,19 @@ class PolygonProblemDownloaderImpl(
         cache[FullPackageId(packageId, includeTests, statementFormat)] = problem
     }
 
-    override suspend fun downloadProblem(problemId: Int, includeTests: Boolean, statementFormat: StatementFormat) =
+    /**
+     * Downloads the problem with the given [problemId].
+     *
+     * Tests might be skipped by setting [includeTests].
+     *
+     * @param problemId id of the problem to download.
+     * @param includeTests if true then the problem tests will also be downloaded.
+     * @return The problem with or without tests, depending on [includeTests] parameter.
+     * @throws NoSuchProblemException if the problem does not exist.
+     * @throws AccessDeniedException if not enough rights to download the problem.
+     * @throws ProblemDownloadingException if something gone wrong while downloading the problem.
+     */
+    suspend fun downloadProblem(problemId: Int, includeTests: Boolean, statementFormat: StatementFormat) =
         withContext(Dispatchers.IO) {
             // eagerly check for access
             val problem = getProblem(problemId)
