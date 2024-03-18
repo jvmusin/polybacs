@@ -44,3 +44,6 @@ polygon-problems
 sybon-packages
 ready
 src/main/resources/application.yaml
+
+# Ignore .DS_Store files
+.DS_Store
