@@ -1,7 +1,6 @@
 package io.github.jvmusin.polybacs.sybon
 
 import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
-import io.github.jvmusin.polybacs.api.AdditionalProblemProperties.Companion.defaultProperties
 import io.github.jvmusin.polybacs.ir.IRProblem
 import io.github.jvmusin.polybacs.util.toZipArchive
 import java.nio.file.Path
@@ -16,8 +15,8 @@ import kotlin.io.path.writeText
  *
  * @return file where the zip is located.
  */
-fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = defaultProperties): Path {
-    val fullName = properties.buildFullName(name)
+fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalProblemProperties(name)): Path {
+    val fullName = properties.buildFullName()
     val destinationPath = Paths.get(
         "sybon-packages",
         "$fullName-${UUID.randomUUID()}",

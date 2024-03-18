@@ -25,38 +25,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import org.springframework.stereotype.Component
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.io.path.notExists
-import kotlin.io.path.readText
 
 /**
  * Polygon problem downloader
  *
  * Used for downloading problems from Polygon.
  */
-interface PolygonProblemDownloader {
-    /**
-     * Downloads the problem with the given [problemId].
-     *
-     * Tests might be skipped by setting [includeTests].
-     *
-     * @param problemId id of the problem to download.
-     * @param includeTests if true then the problem tests will also be downloaded.
-     * @return The problem with or without tests, depending on [includeTests] parameter.
-     * @throws NoSuchProblemException if the problem does not exist.
-     * @throws AccessDeniedException if not enough rights to download the problem.
-     * @throws ProblemDownloadingException if something gone wrong while downloading the problem.
-     */
-    suspend fun downloadProblem(
-        problemId: Int,
-        includeTests: Boolean,
-        statementFormat: StatementFormat = StatementFormat.PDF,
-    ): IRProblem
-}
-
-class PolygonProblemDownloaderImpl(
+@Component
+class PolygonProblemDownloader(
     private val polygonApi: PolygonApi,
-) : PolygonProblemDownloader {
+) {
 
     /**
      * Full package id.
@@ -182,13 +162,11 @@ class PolygonProblemDownloaderImpl(
      */
     private suspend fun downloadChecker(problemId: Int, packageId: Int): IRChecker {
         val name = "check.cpp"
-        val file = polygonApi.downloadPackage(problemId, packageId).resolve(name)
-        if (file.notExists()) {
-            throw CheckerNotFoundException(
+        val file = polygonApi.getFileFromZipPackage(problemId, packageId, name)
+            ?: throw CheckerNotFoundException(
                 "Не найден чекер '$name'. Другие чекеры не поддерживаются"
             )
-        }
-        return IRChecker(name, file.readText())
+        return IRChecker(name, file.decodeToString())
     }
 
     /**
@@ -391,45 +369,60 @@ class PolygonProblemDownloaderImpl(
         cache[FullPackageId(packageId, includeTests, statementFormat)] = problem
     }
 
-    override suspend fun downloadProblem(problemId: Int, includeTests: Boolean, statementFormat: StatementFormat) =
-        withContext(Dispatchers.IO) {
-            // eagerly check for access
-            val problem = getProblem(problemId)
+    /**
+     * Downloads the problem with the given [problemId].
+     *
+     * Tests might be skipped by setting [includeTests].
+     *
+     * @param problemId id of the problem to download.
+     * @param includeTests if true then the problem tests will also be downloaded.
+     * @return The problem with or without tests, depending on [includeTests] parameter.
+     * @throws NoSuchProblemException if the problem does not exist.
+     * @throws AccessDeniedException if not enough rights to download the problem.
+     * @throws ProblemDownloadingException if something gone wrong while downloading the problem.
+     */
+    suspend fun downloadProblem(
+        problemId: Int,
+        includeTests: Boolean,
+        statementFormat: StatementFormat = StatementFormat.PDF
+    ): IRProblem = withContext(Dispatchers.IO) {
+        // eagerly check for access
+        val problem = getProblem(problemId)
 
-            val packageId = polygonApi.getLatestPackageId(problemId)
+        val packageId = polygonApi.getLatestPackageId(problemId)
 
-            val cached = getProblemFromCache(packageId, includeTests, statementFormat)
-            if (cached != null) return@withContext cached
+        val cached = getProblemFromCache(packageId, includeTests, statementFormat)
+        if (cached != null) return@withContext cached
 
-            val info = async { getProblemInfo(problemId) }
-            val statement = async { downloadStatement(problemId, packageId, statementFormat) }
-            val checker = async { downloadChecker(problemId, packageId) }
+        val info = async { getProblemInfo(problemId) }
+        val statement = async { downloadStatement(problemId, packageId, statementFormat) }
+        val checker = async { downloadChecker(problemId, packageId) }
 
-            val testsAndTestGroups = async {
-                /*
-                 * These methods can throw an exception about incorrectly formatted problem,
-                 * so throw them as soon as possible before downloading tests data.
-                 */
-                run {
-                    info.await()
-                    statement.await()
-                    checker.await()
-                }
-                getTestsAndTestGroups(problemId, includeTests)
+        val testsAndTestGroups = async {
+            /*
+             * These methods can throw an exception about incorrectly formatted problem,
+             * so throw them as soon as possible before downloading tests data.
+             */
+            run {
+                info.await()
+                statement.await()
+                checker.await()
             }
-
-            val solutions = async { getSolutions(problemId) }
-            val limits = async { with(info.await()) { IRLimits(timeLimit, memoryLimit) } }
-
-            IRProblem(
-                name = problem.name,
-                owner = problem.owner,
-                statement = statement.await(),
-                limits = limits.await(),
-                tests = testsAndTestGroups.await().first,
-                groups = testsAndTestGroups.await().second,
-                checker = checker.await(),
-                solutions = solutions.await()
-            ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
+            getTestsAndTestGroups(problemId, includeTests)
         }
+
+        val solutions = async { getSolutions(problemId) }
+        val limits = async { with(info.await()) { IRLimits(timeLimit, memoryLimit) } }
+
+        IRProblem(
+            name = problem.name,
+            owner = problem.owner,
+            statement = statement.await(),
+            limits = limits.await(),
+            tests = testsAndTestGroups.await().first,
+            groups = testsAndTestGroups.await().second,
+            checker = checker.await(),
+            solutions = solutions.await()
+        ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
+    }
 }

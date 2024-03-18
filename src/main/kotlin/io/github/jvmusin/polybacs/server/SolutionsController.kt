@@ -48,8 +48,9 @@ class SolutionsController(
     @RequestMapping("/createTestProblem")
     fun createTestProblem(@PathVariable problemId: Int, session: HttpSession) =
         offloadScope.launch(exceptionHandler("create test problem", session)) {
-             val properties = AdditionalProblemProperties(suffix = "-test")
-             val fullName = properties.buildFullName(polygonService.downloadProblem(problemId).name)
+            val problemName = polygonService.downloadProblem(problemId).name
+            val properties = AdditionalProblemProperties(name = problemName, suffix = "-test")
+            val fullName = properties.buildFullName()
 
              val toastSender = webSocketConnectionKeeper.createSender(session.id)
              transferProblemToBacs(toastSender, problemId, properties, false, polygonService, bacsArchiveService)

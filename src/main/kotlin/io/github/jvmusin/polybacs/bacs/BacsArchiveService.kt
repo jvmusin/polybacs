@@ -127,11 +127,11 @@ class BacsArchiveService(
     /** Uploads [problem] to Bacs archive with extra [properties]. */
     suspend fun uploadProblem(
         problem: IRProblem,
-        properties: AdditionalProblemProperties = AdditionalProblemProperties.defaultProperties,
+        properties: AdditionalProblemProperties = AdditionalProblemProperties(problem.name),
     ): String {
         val zip = problem.toZipArchive(properties)
         uploadProblem(zip)
-        val fullName = properties.buildFullName(problem.name)
+        val fullName = properties.buildFullName()
         val state = waitTillProblemIsImported(fullName)
         if (state != BacsProblemState.IMPORTED)
             throw BacsProblemUploadException("Задача $fullName не импортирована, статус $state")

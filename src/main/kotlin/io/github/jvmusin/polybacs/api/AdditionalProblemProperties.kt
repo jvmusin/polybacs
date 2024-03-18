@@ -14,17 +14,13 @@ import io.github.jvmusin.polybacs.api.StatementFormat.PDF
  * @param statementFormat format of the statement, actually `PDF` or `HTML`.
  */
 data class AdditionalProblemProperties(
-    val prefix: String? = null,
+    val name: String,
+    val prefix: String? = null, // TODO: Drop nullability; drop whole concept?
     val suffix: String? = null,
     val timeLimitMillis: Int? = null,
     val memoryLimitMegabytes: Int? = null,
     val statementFormat: StatementFormat = PDF
 ) {
-    companion object {
-        /** Do not add any prefix/suffix and use problem's default time and memory limits. */
-        val defaultProperties = AdditionalProblemProperties()
-    }
-
     /** Build problem name prefixing it with [prefix] and suffixing with [suffix] if they are not `null`. */
-    fun buildFullName(problemName: String) = "${prefix.orEmpty()}$problemName${suffix.orEmpty()}"
+    fun buildFullName() = "${prefix.orEmpty()}$name${suffix.orEmpty()}"
 }

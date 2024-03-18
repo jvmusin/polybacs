@@ -2,6 +2,8 @@ package io.github.jvmusin.polybacs.polygon.api
 
 import io.github.jvmusin.polybacs.polygon.PolygonConfig
 import io.github.jvmusin.polybacs.util.sha512
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.codec.ClientCodecConfigurer
@@ -14,6 +16,7 @@ import org.springframework.web.service.invoker.createClient
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLDecoder
 
+@Configuration
 class PolygonApiFactory(
     private val config: PolygonConfig,
 ) {
@@ -89,7 +92,8 @@ class PolygonApiFactory(
             .createClient<T>()
     }
 
-    fun create(): PolygonApi {
+    @Bean
+    fun polygonApi(): PolygonApi {
         return createApi()
     }
 }

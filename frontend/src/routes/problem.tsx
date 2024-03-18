@@ -4,7 +4,7 @@ import {
   ProblemInfo,
   downloadProblem,
   getProblemInfo,
-  transferProblem as transferProblem,
+  transferProblem,
   useNameAvailability,
 } from '@/lib/polybacs-api'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -114,7 +114,7 @@ function NameModifiersCard({ form }: { form: FormType }) {
             </Field>
             <Field>
               <Label>Name</Label>
-              <Input {...form.register('name')} type="text" disabled />
+              <Input {...form.register('name')} type="text" />
             </Field>
             <Field>
               <Label>Suffix</Label>
@@ -218,6 +218,7 @@ function Footer({ info, form }: { info: ProblemInfo; form: FormType }) {
     return {
       problemId: info.problem.id,
       additionalProperties: {
+        name: data.name,
         prefix: data.prefix,
         suffix: data.suffix,
         timeLimitMillis: data.timeLimitMillis,
