@@ -14,7 +14,8 @@ function Toast({ title, description }: { title: string; description: string }) {
 }
 
 export function WebSocketNotifications() {
-  const ws = useWebSocket('ws://localhost:8080/ws', {
+  const wsUrl = document.location.origin.replace(/^http/, 'ws') + '/ws'
+  const ws = useWebSocket(wsUrl, {
     onOpen: (e) => {
       console.log('Connected to server', e)
       toast.success(
