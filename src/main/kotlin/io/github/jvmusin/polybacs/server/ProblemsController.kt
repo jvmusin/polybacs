@@ -23,11 +23,11 @@ class ProblemsController(
     }
 
     @GetMapping("/nameAvailability")
-    suspend fun getNameAvailability(name: String): NameAvailability {
+    suspend fun getNameAvailability(name: String): String {
         return when (bacsArchiveService.getProblemState(name)) {
             BacsProblemState.NOT_FOUND -> NameAvailability.AVAILABLE
             BacsProblemState.IMPORTED, BacsProblemState.PENDING_IMPORT -> NameAvailability.TAKEN
             BacsProblemState.UNKNOWN -> NameAvailability.CHECK_FAILED
-        }
+        }.name
     }
 }
