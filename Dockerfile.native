@@ -18,7 +18,7 @@ WORKDIR /app
 COPY . /app
 RUN --mount=type=secret,id=application_yaml,dst=application.yaml cp application.yaml src/main/resources/application.yaml
 RUN cd frontend && npm ci && npm run build
-RUN chmod +x gradlew && ./gradlew nativeCompile -PcopyFrontend
+RUN chmod +x gradlew && ./gradlew nativeCompile -PcopyFrontend -x test
 
 FROM alpine:latest
 RUN apk add gcompat
