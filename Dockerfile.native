@@ -1,13 +1,24 @@
 FROM ubuntu:latest
 
 RUN apt-get update && apt-get install -y curl zip unzip zlib1g-dev g++
+
+# Installing Node
+SHELL ["/bin/bash", "--login", "-i", "-c"]
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+RUN source /root/.bashrc && nvm install 21
+RUN node --version
+RUN npm --version
+#SHELL ["/bin/bash", "--login", "-c"]
+
+# Installing NIK
 RUN curl -s "https://get.sdkman.io" | bash && bash -c "source \"$HOME/.sdkman/bin/sdkman-init.sh\" && sdk install java 23.1.2.r21-nik"
 ENV JAVA_HOME /root/.sdkman/candidates/java/current
 
 WORKDIR /app
 COPY . /app
 RUN --mount=type=secret,id=application_yaml,dst=application.yaml cp application.yaml src/main/resources/application.yaml
-RUN chmod +x gradlew && ./gradlew nativeTest nativeCompile
+RUN cd frontend && npm ci && npm run build
+RUN chmod +x gradlew && ./gradlew nativeCompile -PcopyFrontend
 
 FROM alpine:latest
 RUN apk add gcompat
