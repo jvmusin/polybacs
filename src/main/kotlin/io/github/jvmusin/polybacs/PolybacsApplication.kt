@@ -1,13 +1,11 @@
 package io.github.jvmusin.polybacs
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.github.jvmusin.polybacs.api.ToastKind
+import io.github.jvmusin.polybacs.server.StatusTrackUpdate
 import io.github.jvmusin.polybacs.util.ToastSender
-import org.apache.catalina.Context
-import org.apache.tomcat.util.http.Rfc6265CookieProcessor
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -50,6 +48,16 @@ class WebSocketConnectionKeeper(
         println("Received message: " + message.payload + " from session: ${session.sessionId} with id: ${session.id}")
     }
 
+    fun sendMessage(sessionId: String, message: Any) {
+        val list = handlers[sessionId] ?: return
+        val msg = jacksonObjectMapper().writer().writeValueAsString(message)
+        for (session in list.filter { it.isOpen }) {
+            offloadScope.launch {
+                session.sendMessage(TextMessage(msg))
+            }
+        }
+    }
+
     fun createSender(sessionId: String): ToastSender = object : ToastSender {
         override fun send(content: String, kind: ToastKind) {
             val list = handlers[sessionId] ?: return
@@ -60,6 +68,14 @@ class WebSocketConnectionKeeper(
             }
         }
     }
+}
+
+interface StatusTrackUpdateSender {
+    fun sendUpdate(update: TrackUpdate)
+
+    sealed interface TrackUpdate
+    data class TrackCreated(val trackId: Int, val problemId: Int, val problemName: String) : TrackUpdate
+    data class TrackUpdated(val trackId: Int, val update: StatusTrackUpdate) : TrackUpdate
 }
 
 @Configuration

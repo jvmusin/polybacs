@@ -1,17 +1,14 @@
 package io.github.jvmusin.polybacs.server
 
-import io.github.jvmusin.polybacs.WebSocketConnectionKeeper
 import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
 import io.github.jvmusin.polybacs.api.ProblemInfo
 import io.github.jvmusin.polybacs.api.StatementFormat
-import io.github.jvmusin.polybacs.api.ToastKind
 import io.github.jvmusin.polybacs.bacs.BacsArchiveService
 import io.github.jvmusin.polybacs.ir.IRProblem
 import io.github.jvmusin.polybacs.polygon.PolygonService
 import io.github.jvmusin.polybacs.polygon.api.toDto
 import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadingException
 import io.github.jvmusin.polybacs.sybon.toZipArchive
-import io.github.jvmusin.polybacs.util.ToastSender
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
 import org.springframework.http.HttpStatus
@@ -24,7 +21,7 @@ import kotlin.io.path.name
 class ProblemController(
     private val bacsArchiveService: BacsArchiveService,
     private val polygonService: PolygonService,
-    private val webSocketConnectionKeeper: WebSocketConnectionKeeper,
+    private val statusTracker: StatusTracker
 ) {
     @GetMapping
     suspend fun getProblem(@PathVariable problemId: Int): ProblemInfo {
@@ -41,15 +38,19 @@ class ProblemController(
         session: HttpSession,
         response: HttpServletResponse,
     ) {
-        val toastSender = webSocketConnectionKeeper.createSender(session.id)
-        val irProblem = downloadProblem(toastSender, problemId, polygonService, properties.statementFormat)
+        val updateConsumer = statusTracker.newTrack(problemId, properties.buildFullName(), session.id)
+        val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat)
         val zip = irProblem.toZipArchive(properties)
-        toastSender.send("Задача выкачана из полигона, скачиваем архив", ToastKind.SUCCESS)
+        updateConsumer.consumeUpdate(
+            "The problem is downloaded from Polygon, now saving the archive",
+            StatusTrackUpdateSeverity.NEUTRAL
+        )
         response.addHeader(
             "Content-Disposition",
             "attachment; filename=${zip.name}"
         )
         response.outputStream.use { zip.toFile().inputStream().copyTo(it) }
+        updateConsumer.consumeUpdate("The archive is saved", StatusTrackUpdateSeverity.SUCCESS)
     }
 
     @PostMapping("/transfer")
@@ -59,43 +60,46 @@ class ProblemController(
         @RequestBody properties: AdditionalProblemProperties,
         session: HttpSession,
     ) {
-        val toastSender = webSocketConnectionKeeper.createSender(session.id) // add problem name
-        transferProblemToBacs(toastSender, problemId, properties, true, polygonService, bacsArchiveService)
+        val updateConsumer = statusTracker.newTrack(problemId, properties.buildFullName(), session.id)
+        transferProblemToBacs(updateConsumer, problemId, properties, true, polygonService, bacsArchiveService)
     }
 }
 
 suspend fun downloadProblem(
-    toastSender: ToastSender,
+    updateConsumer: StatusTrackUpdateConsumer,
     problemId: Int,
     polygonService: PolygonService,
     statementFormat: StatementFormat = StatementFormat.PDF,
 ): IRProblem {
     try {
-        toastSender.send("Выкачиваем задачу из полигона")
+        updateConsumer.consumeUpdate("Downloading problem from Polygon", StatusTrackUpdateSeverity.NEUTRAL)
         return polygonService.downloadProblem(problemId, true, statementFormat)
     } catch (e: ProblemDownloadingException) {
-        val msg = "Не удалось выкачать задачу из полигона: ${e.message}"
-        toastSender.send(msg, ToastKind.FAILURE)
+        val msg = "Failed to download the problem from polygon: ${e.message}"
+        updateConsumer.consumeUpdate(msg, StatusTrackUpdateSeverity.FAILURE)
         throw ResponseStatusException(HttpStatus.BAD_REQUEST, msg, e)
     }
 }
 
 suspend fun transferProblemToBacs(
-    toastSender: ToastSender,
+    updateConsumer: StatusTrackUpdateConsumer,
     problemId: Int,
     properties: AdditionalProblemProperties,
     isFinalStep: Boolean,
     polygonService: PolygonService,
     bacsArchiveService: BacsArchiveService,
 ) {
-    val irProblem = downloadProblem(toastSender, problemId, polygonService, properties.statementFormat)
-    toastSender.send("Задача выкачана из полигона, закидываем в бакс")
+    val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat)
+    updateConsumer.consumeUpdate("Задача выкачана из полигона, закидываем в бакс", StatusTrackUpdateSeverity.NEUTRAL)
     try {
         bacsArchiveService.uploadProblem(irProblem, properties)
     } catch (e: Exception) {
         val msg = "Не удалось закинуть задачу в бакс: ${e.message}"
-        toastSender.send(msg, ToastKind.FAILURE)
+        updateConsumer.consumeUpdate(msg, StatusTrackUpdateSeverity.FAILURE)
         throw ResponseStatusException(HttpStatus.BAD_REQUEST, msg, e)
     }
-    toastSender.send("Задача закинута в бакс", if (isFinalStep) ToastKind.SUCCESS else ToastKind.INFORMATION)
+    updateConsumer.consumeUpdate(
+        "Задача закинута в бакс",
+        if (isFinalStep) StatusTrackUpdateSeverity.SUCCESS else StatusTrackUpdateSeverity.NEUTRAL
+    )
 }

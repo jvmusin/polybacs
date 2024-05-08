@@ -26,6 +26,7 @@ class SolutionsController(
     private val testSybonArchiveService: SybonArchiveService,
     private val sybonCheckingService: SybonCheckingService,
     private val offloadScope: OffloadScope,
+    private val statusTracker: StatusTracker,
 ) {
     @GetMapping
     suspend fun getSolutions(@PathVariable problemId: Int): List<Solution> {
@@ -52,17 +53,17 @@ class SolutionsController(
             val properties = AdditionalProblemProperties(name = problemName, suffix = "-test")
             val fullName = properties.buildFullName()
 
-             val toastSender = webSocketConnectionKeeper.createSender(session.id)
-             transferProblemToBacs(toastSender, problemId, properties, false, polygonService, bacsArchiveService)
+            val updateConsumer = statusTracker.newTrack(problemId, problemName, session.id)
+            transferProblemToBacs(updateConsumer, problemId, properties, false, polygonService, bacsArchiveService)
 
-             toastSender.send("Ждём, пока задача появится в сайбоне (может занять минуты две)")
-             val sybonProblem = testSybonArchiveService.importProblem(fullName)
-             if (sybonProblem == null) {
-                 toastSender.send("Задача так и не появилась в сайбоне", ToastKind.FAILURE)
-                 return@launch
-             }
-             toastSender.send("Задача появилась в сайбоне: ${sybonProblem.id}")
-         }
+            updateConsumer.consumeUpdate("Ждём, пока задача появится в сайбоне (может занять минуты две)", StatusTrackUpdateSeverity.NEUTRAL)
+            val sybonProblem = testSybonArchiveService.importProblem(fullName)
+            if (sybonProblem == null) {
+                updateConsumer.consumeUpdate("Задача так и не появилась в сайбоне", StatusTrackUpdateSeverity.FAILURE)
+                return@launch
+            }
+            updateConsumer.consumeUpdate("Задача появилась в сайбоне: ${sybonProblem.id}", StatusTrackUpdateSeverity.SUCCESS)
+        }
 
     @RequestMapping("/test")
     fun testSolution(@PathVariable problemId: Int, sybonProblemId: Int, solutionName: String, session: HttpSession) =
