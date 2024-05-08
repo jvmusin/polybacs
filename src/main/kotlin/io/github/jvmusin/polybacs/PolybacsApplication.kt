@@ -50,7 +50,7 @@ class WebSocketConnectionKeeper(
 
     fun sendMessage(sessionId: String, message: Any) {
         val list = handlers[sessionId] ?: return
-        val msg = jacksonObjectMapper().writer().writeValueAsString(message)
+        val msg = jacksonObjectMapper().writeValueAsString(message)
         for (session in list.filter { it.isOpen }) {
             offloadScope.launch {
                 session.sendMessage(TextMessage(msg))

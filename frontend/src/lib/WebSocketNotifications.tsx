@@ -2,19 +2,51 @@ import useWebSocket, { ReadyState } from 'react-use-websocket'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import clsx from 'clsx';
+import { z } from 'zod';
 
 function Toast({ title, description }: { title: string; description: string }) {
   return (
     <div>
-      <span className="text-lg font-bold">{title}</span>
+      <span>{title}</span>
       <hr />
-      <p>{description}</p>
+      <p className='text-sm'>{description}</p>
     </div>
   )
 }
 
+const NotificationSchema = z.object({
+  track: z.object({
+    id: z.number(),
+    problemId: z.number(),
+    problemName: z.string()
+  }),
+  message: z.string(),
+  severity: z.enum(['NEUTRAL', 'SUCCESS', 'FAILURE'])
+});
+type Notification = z.infer<typeof NotificationSchema>
+
+function NotificationToast({ notification }: { notification: Notification }) {
+  return <Toast title={`${notification.track.problemName} (${notification.track.problemId})`} description={`${notification.message}`} />
+}
+
+function showNotification(notification: Notification) {
+  console.log('New notification', notification)
+  const toastItem = <NotificationToast notification={notification} />
+  const props = { autoClose: 30000 }
+  const severity = notification.severity
+  if (severity === 'NEUTRAL') {
+    toast.info(toastItem, props)
+  } else if (severity === 'SUCCESS') {
+    toast.success(toastItem, props)
+  } else if (severity === 'FAILURE') {
+    toast.error(toastItem, props)
+  } else {
+    console.warn(`unknown severity: ${severity}`)
+  }
+}
+
 export function WebSocketNotifications() {
-  const wsUrl = document.location.origin.replace(/^http/, 'ws') + '/ws'
+  const wsUrl = `${document.location.origin.replace(/^http/, 'ws')}/ws`
   const ws = useWebSocket(wsUrl, {
     onOpen: (e) => {
       console.log('Connected to server', e)
@@ -43,20 +75,18 @@ export function WebSocketNotifications() {
       })
     },
     onMessage: (e) => {
-      console.log('New notification', e.data)
-      toast.info(<Toast title="New notification" description={e.data} />, {
-        autoClose: 30000,
-      })
+      const notification = NotificationSchema.parse(JSON.parse(e.data))
+      showNotification(notification)
     },
     shouldReconnect: () => true,
   })
 
   const color = clsx(
     'absolute top-3 right-3 size-3 rounded-full', {
-      'bg-yellow-500': ws.readyState === ReadyState.CONNECTING,
-      'bg-green-500': ws.readyState === ReadyState.OPEN,
-      'bg-red-500': ws.readyState === ReadyState.CLOSED,
-    }
+    'bg-yellow-500': ws.readyState === ReadyState.CONNECTING,
+    'bg-green-500': ws.readyState === ReadyState.OPEN,
+    'bg-red-500': ws.readyState === ReadyState.CLOSED,
+  }
   )
   return (
     <div className="realtive">
