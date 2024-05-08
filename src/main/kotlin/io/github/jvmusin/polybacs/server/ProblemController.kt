@@ -11,6 +11,7 @@ import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadi
 import io.github.jvmusin.polybacs.sybon.toZipArchive
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.servlet.http.HttpSession
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -75,7 +76,9 @@ suspend fun downloadProblem(
         updateConsumer.consumeUpdate("Downloading problem from Polygon", StatusTrackUpdateSeverity.NEUTRAL)
         return polygonService.downloadProblem(problemId, true, statementFormat)
     } catch (e: ProblemDownloadingException) {
-        val msg = "Failed to download the problem from polygon: ${e.message}"
+        val msg = "Failed to download the problem from Polygon: ${e.message}"
+        val logger = LoggerFactory.getLogger("io.github.jvmusin.polybacs.server.downloadProblem")
+        logger.warn(msg, e)
         updateConsumer.consumeUpdate(msg, StatusTrackUpdateSeverity.FAILURE)
         throw ResponseStatusException(HttpStatus.BAD_REQUEST, msg, e)
     }
@@ -95,6 +98,8 @@ suspend fun transferProblemToBacs(
         bacsArchiveService.uploadProblem(irProblem, properties)
     } catch (e: Exception) {
         val msg = "Не удалось закинуть задачу в бакс: ${e.message}"
+        val logger = LoggerFactory.getLogger("io.github.jvmusin.polybacs.server.transferProblemToBacs")
+        logger.warn(msg, e)
         updateConsumer.consumeUpdate(msg, StatusTrackUpdateSeverity.FAILURE)
         throw ResponseStatusException(HttpStatus.BAD_REQUEST, msg, e)
     }
