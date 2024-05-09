@@ -74,7 +74,7 @@ class PolygonApiFactory(
     }
 
     private val maxInMemorySizeCodecConfigurer = { codecs: ClientCodecConfigurer ->
-        codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024) // 16 MB
+        codecs.defaultCodecs().maxInMemorySize(-1)
     }
 
     private inline fun <reified T : Any> createApi(): T {
