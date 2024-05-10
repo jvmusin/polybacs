@@ -327,7 +327,8 @@ class PolygonProblemDownloader(
             val points = group
                 ?.takeIf { it.pointsPolicy == IRTestGroupPointsPolicy.EACH_TEST }
                 ?.let { test.points!!.toInt() }
-            IRTest(test.index, test.useInStatements, inputs[i].await(), answers[i].await(), points, test.group)
+            val output = answers[i].await() ?: "" // empty response somehow becomes null
+            IRTest(test.index, test.useInStatements, inputs[i].await(), output, points, test.group)
         }
         tests to testGroups
     }
