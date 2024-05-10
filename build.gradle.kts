@@ -21,7 +21,7 @@ repositories {
 }
 
 val jsoupVersion = "1.17.2"
-val kotestVersion = "5.8.1"
+val kotestVersion = "5.9.0"
 val kotestExtensionsSpringVersion = "1.1.3"
 
 dependencies {
