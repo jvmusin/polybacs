@@ -31,12 +31,11 @@ class PolygonApiFactory(
      * so we will have `null` result and `non-null` message
      * in the [PolygonResponse].
      */
-    private val responseCode400to200Filter = ExchangeFilterFunction { request, next ->
-        next.exchange(request).map {
-            when (it.statusCode()) {
-                HttpStatus.BAD_REQUEST -> it.mutate().statusCode(HttpStatus.OK).build()
-                else -> it
-            }
+    private val responseCode400to200Filter = createFilter { request, next ->
+        val response = next.exchange(request)
+        when (response.statusCode()) {
+            HttpStatus.BAD_REQUEST -> response.mutate().statusCode(HttpStatus.OK).build()
+            else -> response
         }
     }
 
@@ -45,37 +44,31 @@ class PolygonApiFactory(
      *
      * Polygon API returns `text/html` content type, but it's actually `application/json`.
      */
-    private val fixResponseContentTypeFilter = ExchangeFilterFunction { request, next ->
-        if (request.url().toString().contains("problem.testAnswer")) {
-            return@ExchangeFilterFunction next.exchange(request)
-        }
-        next.exchange(request).map {
-            it.mutate().headers { headers -> headers.contentType = MediaType.APPLICATION_JSON }.build()
-        }
+    private val fixResponseContentTypeFilter = createFilter { request, next ->
+        next.exchange(request).mutate()
+            .headers { headers -> headers.contentType = MediaType.APPLICATION_JSON }.build()
     }
 
-    val logRequestFilter = object : CoExchangeFilterFunction() {
-        override suspend fun filter(request: ClientRequest, next: CoExchangeFunction): ClientResponse {
-            if (false) {
-                val url = request.url()
-                val exchange = next.exchange(request)
-                try {
-                    val body1 = exchange.body(BodyExtractors.toDataBuffers())
-                    val b = body1.collectList().awaitSingle()
-                    println(b)
-                    println(url)
-                    return exchange.mutate().body(Flux.empty()).build()
-                } catch (e: Exception) {
-                    println(e.message)
-                    e.printStackTrace()
-                    throw e
-                }
+    val logRequestFilter = createFilter { request, next ->
+        if (false) {
+            val url = request.url()
+            val exchange = next.exchange(request)
+            try {
+                val body1 = exchange.body(BodyExtractors.toDataBuffers())
+                val b = body1.collectList().awaitSingle()
+                println(b)
+                println(url)
+                return@createFilter exchange.mutate().body(Flux.empty()).build()
+            } catch (e: Exception) {
+                println(e.message)
+                e.printStackTrace()
+                throw e
             }
-            return next.exchange(request)
         }
+        next.exchange(request)
     }
 
-    private val insertApiSigFilter = ExchangeFilterFunction { request, next ->
+    private val insertApiSigFilter = createFilter { request, next ->
         val time = System.currentTimeMillis() / 1000
         val prefix = "abcdef"
         val method = request.url().path.removePrefix("/api/")
@@ -121,5 +114,15 @@ class PolygonApiFactory(
     @Bean
     fun polygonApi(): PolygonApi {
         return createApi()
+    }
+
+    private companion object {
+        fun createFilter(filter: suspend (request: ClientRequest, next: CoExchangeFunction) -> ClientResponse): CoExchangeFilterFunction {
+            return object : CoExchangeFilterFunction() {
+                override suspend fun filter(request: ClientRequest, next: CoExchangeFunction): ClientResponse {
+                    return filter(request, next)
+                }
+            }
+        }
     }
 }
