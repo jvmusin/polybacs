@@ -15,7 +15,7 @@ data class IRProblem(
     val miscFiles: List<IRMiscFile>,
 )
 
-data class IRMiscFile(val destination: Path, val content: ByteArray)
+data class IRMiscFile(val destination: String, val content: ByteArray)
 
 data class IRStatement(val name: String, val content: List<Byte>, val format: StatementFormat = StatementFormat.PDF)
 data class IRTest(
