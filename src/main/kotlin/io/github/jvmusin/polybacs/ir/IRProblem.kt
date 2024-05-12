@@ -33,6 +33,7 @@ data class IRSolution(
     val isMain: Boolean,
     val language: IRLanguage,
     val content: String,
+    val description: String,
 )
 
 enum class IRVerdict {

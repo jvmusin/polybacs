@@ -176,13 +176,19 @@ class PolygonProblemDownloader(
      * @return Problem solutions.
      */
     private suspend fun getSolutions(problemId: Int): List<IRSolution> {
+        val solutions =
+            polygonApi.getSolutionsFromZipPackage(problemId, polygonApi.getLatestPackageId(problemId))
         return polygonApi.getSolutions(problemId).extract().map { solution ->
+            val solutionWithDescription = requireNotNull(solutions[solution.name]) {
+                "Solution ${solution.name} is returned via Polygon API but not found in the problem archive"
+            }
             IRSolution(
                 name = solution.name,
                 verdict = PolygonTagToIRVerdictConverter.convert(solution.tag),
                 isMain = solution.tag == "MA",
                 language = PolygonSourceTypeToIRLanguageConverter.convert(solution.sourceType),
-                content = polygonApi.getSolutionContent(problemId, solution.name)
+                content = solutionWithDescription.solution,
+                description = solutionWithDescription.description,
             )
         }
     }

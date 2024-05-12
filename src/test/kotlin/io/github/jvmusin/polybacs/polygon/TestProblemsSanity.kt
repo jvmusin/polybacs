@@ -4,8 +4,8 @@ import io.github.jvmusin.polybacs.polygon.api.PolygonApi
 import io.github.jvmusin.polybacs.polygon.api.getLatestPackageId
 import io.github.jvmusin.polybacs.polygon.api.getSolutionsFromZipPackage
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.maps.shouldHaveKeys
+import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -18,9 +18,7 @@ class TestProblemsSanity(polygonApi: PolygonApi) : BehaviorSpec({
                 val packageId = polygonApi.getLatestPackageId(problemId)
                 val solutions = polygonApi.getSolutionsFromZipPackage(problemId, packageId)
                 solutions.shouldHaveSize(2)
-
-                val solutionsByName = solutions.associateBy { it.name }
-                solutionsByName.shouldHaveKeys("main.cpp", "wa.cpp")
+                solutions.shouldHaveKeys("main.cpp", "wa.cpp")
 
                 val mainCppExpectedContent = """
                     #include <iostream>
@@ -51,8 +49,8 @@ class TestProblemsSanity(polygonApi: PolygonApi) : BehaviorSpec({
                     }
                 """.trimIndent().replace("\n", "\r\n")
 
-                solutionsByName["main.cpp"]!!.solution.decodeToString().shouldBe(mainCppExpectedContent)
-                solutionsByName["wa.cpp"]!!.solution.decodeToString().shouldBe(waCppExpectedContent)
+                solutions["main.cpp"]!!.solution.shouldBe(mainCppExpectedContent)
+                solutions["wa.cpp"]!!.solution.shouldBe(waCppExpectedContent)
             }
         }
     }

@@ -75,8 +75,11 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
         )
     }
 
-    fun writeMainSolution() {
-        solutionPath.resolve(mainSolution.name).writeText(mainSolution.content)
+    fun writeSolutions() {
+        solutions.forEach { s ->
+            solutionPath.resolve(s.name).writeText(s.content)
+            solutionPath.resolve(s.name + ".desc").writeText(s.description)
+        }
     }
 
     fun writeStatement() {
@@ -104,7 +107,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
     writeConfig()
     writeFormat()
     writeChecker()
-    writeMainSolution()
+    writeSolutions()
     writeStatement()
     writeTests()
 

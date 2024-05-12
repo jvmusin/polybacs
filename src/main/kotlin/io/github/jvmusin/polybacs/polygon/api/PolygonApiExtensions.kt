@@ -48,21 +48,21 @@ private suspend fun PolygonApi.getFilesFromZipPackage(
 suspend fun PolygonApi.getSolutionsFromZipPackage(
     problemId: Int,
     packageId: Int
-): List<PolygonSolutionWithDescription> {
+): Map<String, PolygonSolutionWithDescription> {
     val solutionNames = getSolutions(problemId).extract().map { it.name }
     return usePackageZip(problemId, packageId) { zip ->
-        solutionNames.map { name ->
-            val solution = zip.getInputStream(zip.getEntry("solutions/$name")).readBytes()
-            val description = zip.getInputStream(zip.getEntry("solutions/$name.desc")).readBytes()
-            PolygonSolutionWithDescription(name, solution, description)
+        solutionNames.associate { name ->
+            val solution = zip.getInputStream(zip.getEntry("solutions/$name")).readBytes().decodeToString()
+            val description = zip.getInputStream(zip.getEntry("solutions/$name.desc")).readBytes().decodeToString()
+            name to PolygonSolutionWithDescription(name, solution, description)
         }
     }
 }
 
 data class PolygonSolutionWithDescription(
     val name: String,
-    val solution: ByteArray,
-    val description: ByteArray,
+    val solution: String,
+    val description: String,
 )
 
 suspend fun PolygonApi.getStatementRaw(
