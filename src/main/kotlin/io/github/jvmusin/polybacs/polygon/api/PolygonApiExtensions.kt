@@ -26,21 +26,31 @@ private suspend inline fun <T> PolygonApi.usePackageZip(problemId: Int, packageI
 
 suspend fun PolygonApi.getFileFromZipPackage(problemId: Int, packageId: Int, filePath: String): ByteArray? {
     return usePackageZip(problemId, packageId) { zip ->
+        zip.readFile(filePath)
         zip.getEntry(filePath)?.let { entry ->
             zip.getInputStream(entry).readBytes()
         }
     }
 }
 
-private suspend fun PolygonApi.getFilesFromZipPackage(
+suspend fun PolygonApi.getFilesFromZipPackage(
     problemId: Int,
     packageId: Int,
-    filesPath: String
+    filesPath: String,
+    filter: (name: String) -> Boolean = { true }
 ): Map<String, ByteArray> {
     val prefix = "$filesPath/"
     return usePackageZip(problemId, packageId) { zip ->
-        zip.entries.asSequence().filter { it.name.startsWith(prefix) && !it.isDirectory }.associate { entry ->
-            entry.name.removePrefix(prefix) to zip.getInputStream(entry).readBytes()
+        zip.entries.asSequence()
+            .filter { !it.isDirectory && it.name.startsWith(prefix) && filter(it.name.removePrefix(prefix)) }
+            .associate { it.name.removePrefix(prefix) to zip.getInputStream(it).readBytes() }
+    }
+}
+
+private fun ZipFile.readFile(name: String): ByteArray? {
+    return getEntry(name)?.let { entry ->
+        getInputStream(entry).use {
+            it.readBytes()
         }
     }
 }
@@ -51,20 +61,13 @@ suspend fun PolygonApi.getSolutionsFromZipPackage(
 ): Map<String, PolygonSolutionWithDescription> {
     val solutionNames = getSolutions(problemId).extract().map { it.name }
     return usePackageZip(problemId, packageId) { zip ->
-        solutionNames.associate { name ->
-            val solution = zip.getInputStream(zip.getEntry("solutions/$name")).readBytes().decodeToString()
-            val description = zip.getInputStream(zip.getEntry("solutions/$name.desc")).readBytes().decodeToString()
-            name to PolygonSolutionWithDescription(name, solution, description)
+        solutionNames.associateWith { name ->
+            val solution = requireNotNull(zip.readFile("solutions/$name")) { "Solution $name not found" }
+            val description = requireNotNull(zip.readFile("solutions/$name.desc")) {
+                "Solution description $name not found"
+            }
+            PolygonSolutionWithDescription(name, solution.decodeToString(), description.decodeToString())
         }
-    }
-}
-
-suspend fun PolygonApi.getProblemXmlFromZipPackage(
-    problemId: Int,
-    packageId: Int
-): String {
-    return usePackageZip(problemId, packageId) { zip ->
-        zip.getInputStream(zip.getEntry("problem.xml")).readBytes().decodeToString()
     }
 }
 
@@ -80,13 +83,31 @@ suspend fun PolygonApi.getStatementRaw(
     format: StatementFormat = StatementFormat.PDF,
     language: String = "russian",
 ): ByteArray? {
-    val formatAsString = format.lowercase
+    val formatString = format.lowercase
     val path = listOf(
         "statements",
-        ".$formatAsString",
+        ".$formatString",
         language,
-        "problem.$formatAsString",
+        "problem.$formatString",
     ).joinToString("/")
+
+    return getFileFromZipPackage(problemId, packageId, path)
+}
+
+suspend fun PolygonApi.getTutorialRaw(
+    problemId: Int,
+    packageId: Int,
+    format: StatementFormat = StatementFormat.PDF,
+    language: String = "russian",
+): ByteArray? {
+    val formatString = format.lowercase
+    val path = listOf(
+        "statements",
+        ".$formatString",
+        language,
+        "tutorial.$formatString",
+    ).joinToString("/")
+
     return getFileFromZipPackage(problemId, packageId, path)
 }
 

@@ -146,10 +146,10 @@ class PolygonProblemDownloader(
         format: StatementFormat = StatementFormat.PDF,
     ): IRStatement {
         return polygonApi.getStatement(problemId)?.let { (language, statement) ->
-            val content = polygonApi.getStatementRaw(problemId, packageId, format, language)?.fixExternalLinks(format)
-                ?: throw StatementNotFoundException("Не найдена $format версия условия")
-            IRStatement(statement.name, content.toList(), format)
-        } ?: throw StatementNotFoundException("Не найдено условие")
+            val content = polygonApi.getStatementRaw(problemId, packageId, format, language)
+                ?: throw StatementNotFoundException("$format statement not found")
+            IRStatement(statement.name, content.fixExternalLinks(format).toList(), format)
+        } ?: throw StatementNotFoundException("No statements found")
     }
 
     /**
@@ -333,7 +333,9 @@ class PolygonProblemDownloader(
             val points = group
                 ?.takeIf { it.pointsPolicy == IRTestGroupPointsPolicy.EACH_TEST }
                 ?.let { test.points!!.toInt() }
-            val output = answers[i].await() ?: "" // empty response somehow becomes null
+
+            @Suppress("USELESS_ELVIS") // empty response somehow becomes null
+            val output = answers[i].await() ?: ""
             IRTest(test.index, test.useInStatements, inputs[i].await(), output, points, test.group)
         }
         tests to testGroups
@@ -403,6 +405,7 @@ class PolygonProblemDownloader(
 
         val info = async { getProblemInfo(problemId) }
         val statement = async { downloadStatement(problemId, packageId, statementFormat) }
+        val tutorial = async { polygonApi.getTutorialRaw(problemId, packageId) }
         val checker = async { downloadChecker(problemId, packageId) }
 
         val testsAndTestGroups = async {
@@ -420,7 +423,29 @@ class PolygonProblemDownloader(
 
         val solutions = async { getSolutions(problemId) }
         val limits = async { with(info.await()) { IRLimits(timeLimit, memoryLimit) } }
-        val problemXml = async { polygonApi.getProblemXmlFromZipPackage(problemId, packageId) }
+        val problemXml = async {
+            requireNotNull(polygonApi.getFileFromZipPackage(problemId, packageId, "problem.xml")) {
+                "problem.xml not found in the archive"
+            }
+        }
+        val filesFiles = async {
+            polygonApi.getFilesFromZipPackage(problemId, packageId, "files") {
+                it != "olymp.sty" &&
+                        it != "testlib.h" &&
+                        it != "statements.ftl" &&
+                        !it.endsWith(".jar") &&
+                        !it.endsWith(".exe")
+            }
+        }
+        val statementsFiles =
+            async { polygonApi.getFilesFromZipPackage(problemId, packageId, "statements") { !it.startsWith('.') } }
+
+        val miscFiles = listOf(
+            IRMiscFile("materials/problem.xml", problemXml.await()),
+        ) +
+                listOfNotNull(tutorial.await()?.let { IRMiscFile("tutorial/tutorial.pdf", it) }) +
+                filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
+                statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
 
         IRProblem(
             name = problem.name,
@@ -431,7 +456,7 @@ class PolygonProblemDownloader(
             groups = testsAndTestGroups.await().second,
             checker = checker.await(),
             solutions = solutions.await(),
-            problemXml = problemXml.await(),
+            miscFiles = miscFiles,
         ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
     }
 }

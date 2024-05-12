@@ -7,6 +7,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import kotlin.io.path.createDirectories
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.writeBytes
 import kotlin.io.path.writeText
 
@@ -105,8 +106,12 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
         for (t in tests) writeTest(t.index, "out", t.output)
     }
 
-    fun writeProblemXml() {
-        materialsPath.resolve("problem.xml").writeText(problemXml)
+    fun writeMiscFiles() {
+        for (file in miscFiles) {
+            val destination = miscPath.resolve(file.destination)
+            destination.createParentDirectories()
+            destination.writeBytes(file.content)
+        }
     }
 
     writeConfig()
@@ -115,7 +120,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
     writeSolutions()
     writeStatement()
     writeTests()
-    writeProblemXml()
+    writeMiscFiles()
 
     val parent = destinationPath.parent
     val zipPath = Paths.get("ready", "${parent.fileName}.zip")
