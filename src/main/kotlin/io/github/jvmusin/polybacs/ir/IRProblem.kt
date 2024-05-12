@@ -1,7 +1,6 @@
 package io.github.jvmusin.polybacs.ir
 
 import io.github.jvmusin.polybacs.api.StatementFormat
-import java.nio.file.Path
 
 data class IRProblem(
     val name: String,
