@@ -146,10 +146,10 @@ class PolygonProblemDownloader(
         format: StatementFormat = StatementFormat.PDF,
     ): IRStatement {
         return polygonApi.getStatement(problemId)?.let { (language, statement) ->
-            val content = polygonApi.getStatementRaw(problemId, packageId, format, language)?.fixExternalLinks(format)
-                ?: throw StatementNotFoundException("Не найдена $format версия условия")
-            IRStatement(statement.name, content.toList(), format)
-        } ?: throw StatementNotFoundException("Не найдено условие")
+            val content = polygonApi.getStatementRaw(problemId, packageId, format, language)
+                ?: throw StatementNotFoundException("$format statement not found")
+            IRStatement(statement.name, content.fixExternalLinks(format).toList(), format)
+        } ?: throw StatementNotFoundException("No statements found")
     }
 
     /**
@@ -403,6 +403,7 @@ class PolygonProblemDownloader(
 
         val info = async { getProblemInfo(problemId) }
         val statement = async { downloadStatement(problemId, packageId, statementFormat) }
+        val tutorial = async { polygonApi.getTutorialRaw(problemId, packageId) }
         val checker = async { downloadChecker(problemId, packageId) }
 
         val testsAndTestGroups = async {
@@ -426,10 +427,15 @@ class PolygonProblemDownloader(
             }
         }
         val filesFiles = async { polygonApi.getFilesFromZipPackage(problemId, packageId, "files") }
+        val statementsFiles =
+            async { polygonApi.getFilesFromZipPackage(problemId, packageId, "statements") { !it.startsWith('.') } }
 
         val miscFiles = listOf(
-            IRMiscFile("materials/problem.xml", problemXml.await())
-        ) + filesFiles.await().map { IRMiscFile("misc/materials/files/${it.key}", it.value) }
+            IRMiscFile("materials/problem.xml", problemXml.await()),
+        ) +
+                listOfNotNull(tutorial.await()?.let { IRMiscFile("tutorial/tutorial.pdf", it) }) +
+                filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
+                statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
 
         IRProblem(
             name = problem.name,

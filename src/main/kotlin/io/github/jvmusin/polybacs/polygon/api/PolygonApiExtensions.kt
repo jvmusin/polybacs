@@ -83,13 +83,31 @@ suspend fun PolygonApi.getStatementRaw(
     format: StatementFormat = StatementFormat.PDF,
     language: String = "russian",
 ): ByteArray? {
-    val formatAsString = format.lowercase
+    val formatString = format.lowercase
     val path = listOf(
         "statements",
-        ".$formatAsString",
+        ".$formatString",
         language,
-        "problem.$formatAsString",
+        "problem.$formatString",
     ).joinToString("/")
+
+    return getFileFromZipPackage(problemId, packageId, path)
+}
+
+suspend fun PolygonApi.getTutorialRaw(
+    problemId: Int,
+    packageId: Int,
+    format: StatementFormat = StatementFormat.PDF,
+    language: String = "russian",
+): ByteArray? {
+    val formatString = format.lowercase
+    val path = listOf(
+        "statements",
+        ".$formatString",
+        language,
+        "tutorial.$formatString",
+    ).joinToString("/")
+
     return getFileFromZipPackage(problemId, packageId, path)
 }
 
