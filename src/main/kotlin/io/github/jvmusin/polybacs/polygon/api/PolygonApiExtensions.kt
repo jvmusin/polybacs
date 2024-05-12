@@ -59,6 +59,15 @@ suspend fun PolygonApi.getSolutionsFromZipPackage(
     }
 }
 
+suspend fun PolygonApi.getProblemXmlFromZipPackage(
+    problemId: Int,
+    packageId: Int
+): String {
+    return usePackageZip(problemId, packageId) { zip ->
+        zip.getInputStream(zip.getEntry("problem.xml")).readBytes().decodeToString()
+    }
+}
+
 data class PolygonSolutionWithDescription(
     val name: String,
     val solution: String,

@@ -11,6 +11,7 @@ data class IRProblem(
     val groups: List<IRTestGroup>?,
     val checker: IRChecker,
     val solutions: List<IRSolution>,
+    val problemXml: String
 )
 
 data class IRStatement(val name: String, val content: List<Byte>, val format: StatementFormat = StatementFormat.PDF)

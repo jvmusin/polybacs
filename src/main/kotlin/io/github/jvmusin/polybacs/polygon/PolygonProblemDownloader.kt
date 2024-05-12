@@ -420,6 +420,7 @@ class PolygonProblemDownloader(
 
         val solutions = async { getSolutions(problemId) }
         val limits = async { with(info.await()) { IRLimits(timeLimit, memoryLimit) } }
+        val problemXml = async { polygonApi.getProblemXmlFromZipPackage(problemId, packageId) }
 
         IRProblem(
             name = problem.name,
@@ -429,7 +430,8 @@ class PolygonProblemDownloader(
             tests = testsAndTestGroups.await().first,
             groups = testsAndTestGroups.await().second,
             checker = checker.await(),
-            solutions = solutions.await()
+            solutions = solutions.await(),
+            problemXml = problemXml.await(),
         ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
     }
 }
