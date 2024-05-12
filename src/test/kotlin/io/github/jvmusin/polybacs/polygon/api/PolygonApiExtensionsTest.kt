@@ -84,7 +84,7 @@ class PolygonApiExtensionsTest(polygonApi: PolygonApi) : BehaviorSpec({
             Then("returns an actual problem.xml") {
                 val problemId = TestProblems.problemWithTwoSolutions
                 val packageId = polygonApi.getLatestPackageId(problemId)
-                val problemXml = polygonApi.getProblemXmlFromZipPackage(problemId, packageId)
+                val problemXml = polygonApi.getProblemXmlFromZipPackage(problemId, packageId).decodeToString()
 
                 val expected = """
                     <?xml version="1.0" encoding="utf-8" standalone="no"?>

@@ -62,9 +62,9 @@ suspend fun PolygonApi.getSolutionsFromZipPackage(
 suspend fun PolygonApi.getProblemXmlFromZipPackage(
     problemId: Int,
     packageId: Int
-): String {
+): ByteArray {
     return usePackageZip(problemId, packageId) { zip ->
-        zip.getInputStream(zip.getEntry("problem.xml")).readBytes().decodeToString()
+        zip.getInputStream(zip.getEntry("problem.xml")).readBytes()
     }
 }
 

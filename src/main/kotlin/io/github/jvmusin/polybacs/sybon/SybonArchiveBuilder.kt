@@ -105,8 +105,10 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
         for (t in tests) writeTest(t.index, "out", t.output)
     }
 
-    fun writeProblemXml() {
-        materialsPath.resolve("problem.xml").writeText(problemXml)
+    fun writeMiscFiles() {
+        for (file in miscFiles) {
+            miscPath.resolve(file.destination).writeBytes(file.content)
+        }
     }
 
     writeConfig()
@@ -115,7 +117,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
     writeSolutions()
     writeStatement()
     writeTests()
-    writeProblemXml()
+    writeMiscFiles()
 
     val parent = destinationPath.parent
     val zipPath = Paths.get("ready", "${parent.fileName}.zip")

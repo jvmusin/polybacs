@@ -27,6 +27,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Component
 import org.springframework.util.ConcurrentReferenceHashMap
+import java.nio.file.Paths
 
 /**
  * Polygon problem downloader
@@ -422,6 +423,10 @@ class PolygonProblemDownloader(
         val limits = async { with(info.await()) { IRLimits(timeLimit, memoryLimit) } }
         val problemXml = async { polygonApi.getProblemXmlFromZipPackage(problemId, packageId) }
 
+        val miscFiles = listOf(
+            IRMiscFile(Paths.get("materials/problem.xml"), problemXml.await())
+        )
+
         IRProblem(
             name = problem.name,
             owner = problem.owner,
@@ -431,7 +436,7 @@ class PolygonProblemDownloader(
             groups = testsAndTestGroups.await().second,
             checker = checker.await(),
             solutions = solutions.await(),
-            problemXml = problemXml.await(),
+            miscFiles = miscFiles,
         ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
     }
 }
