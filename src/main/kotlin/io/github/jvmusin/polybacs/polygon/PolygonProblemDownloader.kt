@@ -333,6 +333,7 @@ class PolygonProblemDownloader(
             val points = group
                 ?.takeIf { it.pointsPolicy == IRTestGroupPointsPolicy.EACH_TEST }
                 ?.let { test.points!!.toInt() }
+
             @Suppress("USELESS_ELVIS") // empty response somehow becomes null
             val output = answers[i].await() ?: ""
             IRTest(test.index, test.useInStatements, inputs[i].await(), output, points, test.group)
@@ -427,7 +428,15 @@ class PolygonProblemDownloader(
                 "problem.xml not found in the archive"
             }
         }
-        val filesFiles = async { polygonApi.getFilesFromZipPackage(problemId, packageId, "files") }
+        val filesFiles = async {
+            polygonApi.getFilesFromZipPackage(problemId, packageId, "files") {
+                it != "olymp.sty" &&
+                        it != "testlib.h" &&
+                        it != "statements.ftl" &&
+                        !it.endsWith(".jar") &&
+                        !it.endsWith(".exe")
+            }
+        }
         val statementsFiles =
             async { polygonApi.getFilesFromZipPackage(problemId, packageId, "statements") { !it.startsWith('.') } }
 
