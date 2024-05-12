@@ -11,9 +11,7 @@ data class IRProblem(
     val groups: List<IRTestGroup>?,
     val checker: IRChecker,
     val solutions: List<IRSolution>,
-) {
-    val mainSolution get() = solutions.single { it.isMain }
-}
+)
 
 data class IRStatement(val name: String, val content: List<Byte>, val format: StatementFormat = StatementFormat.PDF)
 data class IRTest(

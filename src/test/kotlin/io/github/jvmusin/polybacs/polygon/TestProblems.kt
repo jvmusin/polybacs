@@ -103,5 +103,5 @@ object TestProblems {
     /**
      * Problem with two solutions - `main.cpp` and `wa.cpp`.
      */
-    const val problemWithTwoSolutions = 357044;
+    const val problemWithTwoSolutions = 357044
 }
