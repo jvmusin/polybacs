@@ -99,4 +99,9 @@ object TestProblems {
      * Has two tests - first test is a sample with group **'sample'**, second test has group **'first'**.
      */
     const val problemWithTestGroupsButNoPointsEnabled = 160373
+
+    /**
+     * Problem with two solutions - `main.cpp` and `wa.cpp`.
+     */
+    const val problemWithTwoSolutions = 357044
 }

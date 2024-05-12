@@ -19,13 +19,51 @@ private suspend fun PolygonApi.downloadPackageZip(problemId: Int, packageId: Int
     }
 }
 
-suspend fun PolygonApi.getFileFromZipPackage(problemId: Int, packageId: Int, filePath: String): ByteArray? {
+private suspend inline fun <T> PolygonApi.usePackageZip(problemId: Int, packageId: Int, block: (zip: ZipFile) -> T): T {
     val packageZipBytes = downloadPackageZip(problemId, packageId)
-    ZipFile.Builder().setByteArray(packageZipBytes).get().use {
-        val entry = it.getEntry(filePath) ?: return null
-        return it.getInputStream(entry).readBytes()
+    return ZipFile.Builder().setByteArray(packageZipBytes).get().use(block)
+}
+
+suspend fun PolygonApi.getFileFromZipPackage(problemId: Int, packageId: Int, filePath: String): ByteArray? {
+    return usePackageZip(problemId, packageId) { zip ->
+        zip.getEntry(filePath)?.let { entry ->
+            zip.getInputStream(entry).readBytes()
+        }
     }
 }
+
+private suspend fun PolygonApi.getFilesFromZipPackage(
+    problemId: Int,
+    packageId: Int,
+    filesPath: String
+): Map<String, ByteArray> {
+    val prefix = "$filesPath/"
+    return usePackageZip(problemId, packageId) { zip ->
+        zip.entries.asSequence().filter { it.name.startsWith(prefix) && !it.isDirectory }.associate { entry ->
+            entry.name.removePrefix(prefix) to zip.getInputStream(entry).readBytes()
+        }
+    }
+}
+
+suspend fun PolygonApi.getSolutionsFromZipPackage(
+    problemId: Int,
+    packageId: Int
+): Map<String, PolygonSolutionWithDescription> {
+    val solutionNames = getSolutions(problemId).extract().map { it.name }
+    return usePackageZip(problemId, packageId) { zip ->
+        solutionNames.associate { name ->
+            val solution = zip.getInputStream(zip.getEntry("solutions/$name")).readBytes().decodeToString()
+            val description = zip.getInputStream(zip.getEntry("solutions/$name.desc")).readBytes().decodeToString()
+            name to PolygonSolutionWithDescription(name, solution, description)
+        }
+    }
+}
+
+data class PolygonSolutionWithDescription(
+    val name: String,
+    val solution: String,
+    val description: String,
+)
 
 suspend fun PolygonApi.getStatementRaw(
     problemId: Int,
