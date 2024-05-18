@@ -85,8 +85,8 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
     }
 
     fun writeStatement() {
-        val statementName = "problem.${statement.format.lowercase}"
-        statementPath.resolve(statementName).writeBytes(statement.content.toByteArray())
+        val statementFileName = "problem.${statement.format.lowercase}"
+        statement.files.forEach { statementPath.resolve(it.destination).writeBytes(it.content) }
         statementPath.resolve("pdf.ini").writeText(
             """
                 [info]
@@ -94,7 +94,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalP
 
                 [build]
                 builder = copy
-                source = $statementName
+                source = $statementFileName
             """.trimIndent()
         )
     }

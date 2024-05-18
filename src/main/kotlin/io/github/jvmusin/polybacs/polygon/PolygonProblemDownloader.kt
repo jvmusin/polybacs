@@ -112,7 +112,7 @@ class PolygonProblemDownloader(
             """.trimIndent()
             val cssWas = """
                 <LINK href="problem-statement.css" rel="stylesheet" type="text/css">
-            """.trimIndent()
+            """.trimIndent() // TODO: Drop this replacement and put in the archive maybe
             val cssNew = """
                 <LINK href="https://statement.bacs.cs.istu.ru/problem-statement.css" rel="stylesheet" type="text/css">
             """.trimIndent()
@@ -137,19 +137,28 @@ class PolygonProblemDownloader(
      * @param problemId id of the problem.
      * @param packageId id of the problem package.
      * @param format format of the statement be it `PDF` or `HTML`.
-     * @return Problem statement.
-     * @throws StatementNotFoundException if there are no statements for the problem.
+     * @return An [IRStatement] for the given problem.
+     * @throws StatementNotFoundException when the statement for the requested format/language not found.
      */
     private suspend fun downloadStatement(
         problemId: Int,
         packageId: Int,
         format: StatementFormat = StatementFormat.PDF,
     ): IRStatement {
-        return polygonApi.getStatement(problemId)?.let { (language, statement) ->
-            val content = polygonApi.getStatementRaw(problemId, packageId, format, language)
-                ?: throw StatementNotFoundException("$format statement not found")
-            IRStatement(statement.name, content.fixExternalLinks(format).toList(), format)
-        } ?: throw StatementNotFoundException("No statements found")
+        val (language, statement) = polygonApi.getStatement(problemId)
+            ?: throw StatementNotFoundException("No statements found")
+
+        val files = polygonApi.getStatementFiles(problemId, packageId, format, language)
+        val mainProblemFileName = "problem.${format.lowercase}"
+        if (files.keys.none { it == mainProblemFileName })
+            throw StatementNotFoundException("$format statement not found")
+        val extraFiles = files.map {
+            IRStatementExtraFile(
+                it.key,
+                if (it.key == mainProblemFileName) it.value.fixExternalLinks(format) else it.value
+            )
+        }
+        return IRStatement(statement.name, extraFiles, format)
     }
 
     /**

@@ -77,21 +77,20 @@ data class PolygonSolutionWithDescription(
     val description: String,
 )
 
-suspend fun PolygonApi.getStatementRaw(
+suspend fun PolygonApi.getStatementFiles(
     problemId: Int,
     packageId: Int,
     format: StatementFormat = StatementFormat.PDF,
     language: String = "russian",
-): ByteArray? {
+): Map<String, ByteArray> {
     val formatString = format.lowercase
     val path = listOf(
         "statements",
         ".$formatString",
         language,
-        "problem.$formatString",
     ).joinToString("/")
 
-    return getFileFromZipPackage(problemId, packageId, path)
+    return getFilesFromZipPackage(problemId, packageId, path)
 }
 
 suspend fun PolygonApi.getTutorialRaw(
