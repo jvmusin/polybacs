@@ -14,9 +14,20 @@ data class IRProblem(
     val miscFiles: List<IRMiscFile>,
 )
 
-data class IRMiscFile(val destination: String, val content: ByteArray)
+interface IRFile {
+    val destination: String
+    val content: ByteArray
+}
 
-data class IRStatement(val name: String, val content: List<Byte>, val format: StatementFormat = StatementFormat.PDF)
+data class IRStatementExtraFile(override val destination: String, override val content: ByteArray) : IRFile
+data class IRMiscFile(override val destination: String, override val content: ByteArray) : IRFile
+
+data class IRStatement(
+    val name: String,
+    val files: List<IRStatementExtraFile>,
+    val format: StatementFormat = StatementFormat.PDF
+)
+
 data class IRTest(
     val index: Int,
     val isSample: Boolean,
