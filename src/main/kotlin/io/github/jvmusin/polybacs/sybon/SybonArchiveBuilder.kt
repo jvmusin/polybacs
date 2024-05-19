@@ -16,7 +16,7 @@ import kotlin.io.path.writeText
  *
  * @return file where the zip is located.
  */
-fun IRProblem.toZipArchive(properties: AdditionalProblemProperties = AdditionalProblemProperties(name)): Path {
+fun IRProblem.toZipArchive(properties: AdditionalProblemProperties): Path {
     val fullName = properties.buildFullName()
     val destinationPath = Paths.get(
         "sybon-packages",

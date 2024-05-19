@@ -44,6 +44,7 @@ const FormSchema = z.object({
     .string()
     .refine((v) => !v.includes(' '), { message: 'No spaces allowed' }),
   statement: z.enum(['HTML', 'PDF']),
+  language: z.string(),
 })
 
 type FormType = ReturnType<typeof useForm<z.infer<typeof FormSchema>>>
@@ -128,35 +129,57 @@ function NameModifiersCard({ form }: { form: FormType }) {
   )
 }
 
-function MiscCard({ form }: { form: FormType }) {
+function StatementCard({ info, form }: { info: ProblemInfo, form: FormType }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Misc</CardTitle>
+        <CardTitle className="text-xl">Statement</CardTitle>
       </CardHeader>
       <CardContent>
         <Controller
-          name="statement"
-          control={form.control}
-          render={({ field: { onChange, value, onBlur } }) => (
-            <RadioGroup
-              className="flex flex-col space-y-0"
-              onChange={onChange}
-              value={value}
-              onBlur={onBlur}
-            >
-              <div className="space-y-2">
-                <RadioField className="flex items-center space-x-2 space-y-0">
-                  <Radio value="HTML">HTML</Radio>
-                  <Label className="font-normal">HTML</Label>
-                </RadioField>
-                <RadioField className="flex items-center space-x-2 space-y-0">
-                  <Radio value="PDF">PDF</Radio>
-                  <Label className="font-normal">PDF</Label>
-                </RadioField>
-              </div>
-            </RadioGroup>
-          )}
+            name="statement"
+            control={form.control}
+            render={({ field: { onChange, value, onBlur } }) => (
+                <RadioGroup
+                    className="flex flex-col space-y-0"
+                    onChange={onChange}
+                    value={value}
+                    onBlur={onBlur}
+                >
+                  <div className="space-y-2">
+                    <RadioField className="flex items-center space-x-2 space-y-0">
+                      <Radio value="HTML">HTML</Radio>
+                      <Label className="font-normal">HTML</Label>
+                    </RadioField>
+                    <RadioField className="flex items-center space-x-2 space-y-0">
+                      <Radio value="PDF">PDF</Radio>
+                      <Label className="font-normal">PDF</Label>
+                    </RadioField>
+                  </div>
+                </RadioGroup>
+            )}
+        />
+        <hr className='my-3'/>
+        <Controller
+            name="language"
+            control={form.control}
+            render={({ field: { onChange, value, onBlur } }) => (
+                <RadioGroup
+                    className="flex flex-col space-y-0"
+                    onChange={onChange}
+                    value={value}
+                    onBlur={onBlur}
+                >
+                  <div className="space-y-2">
+                    {info.statementLanguages.map((lang) => {
+                      return <RadioField className="flex items-center space-x-2 space-y-0">
+                        <Radio value={lang}>{lang}</Radio>
+                        <Label className="font-normal">{lang}</Label>
+                      </RadioField>
+                    })}
+                  </div>
+                </RadioGroup>
+            )}
         />
       </CardContent>
     </Card>
@@ -171,6 +194,7 @@ function formDefaults(info: ProblemInfo): z.infer<typeof FormSchema> {
     name: info.problem.name,
     suffix: '',
     statement: 'HTML',
+    language: info.statementLanguages[0],
   }
 }
 
@@ -201,12 +225,12 @@ function Header({ info }: { info: ProblemInfo }) {
   )
 }
 
-function Main({ form }: { form: FormType }) {
+function Main({ info, form }: { info: ProblemInfo, form: FormType }) {
   return (
     <CardContent>
       <div className="w-100 grid grid-cols-2 gap-3 text-sm">
         <LimitsCard form={form} />
-        <MiscCard form={form} />
+        <StatementCard info={info} form={form} />
         <NameModifiersCard form={form} />
       </div>
     </CardContent>
@@ -224,6 +248,7 @@ function Footer({ info, form }: { info: ProblemInfo; form: FormType }) {
         timeLimitMillis: data.timeLimitMillis,
         memoryLimitMegabytes: data.memoryLimitMegabytes,
         statementFormat: data.statement,
+        language: data.language,
       },
     }
   }
@@ -268,7 +293,7 @@ function LoadedProblem({ info }: { info: ProblemInfo }) {
       <Fieldset>
         <Card>
           <Header info={info} />
-          <Main form={form} />
+          <Main info={info} form={form} />
           <Footer info={info} form={form} />
         </Card>
       </Fieldset>

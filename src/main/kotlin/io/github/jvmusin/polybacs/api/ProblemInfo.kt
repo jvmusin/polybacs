@@ -7,4 +7,5 @@ data class ProblemInfo(
     val interactive: Boolean,
     val timeLimitMillis: Int,
     val memoryLimitMegabytes: Int,
+    val statementLanguages: Set<String>,
 )

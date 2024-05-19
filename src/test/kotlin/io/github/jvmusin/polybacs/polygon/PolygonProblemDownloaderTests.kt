@@ -1,5 +1,7 @@
 package io.github.jvmusin.polybacs.polygon
 
+import io.github.jvmusin.polybacs.api.StatementFormat
+import io.github.jvmusin.polybacs.ir.IRProblem
 import io.github.jvmusin.polybacs.ir.IRTest
 import io.github.jvmusin.polybacs.ir.IRTestGroup
 import io.github.jvmusin.polybacs.ir.IRTestGroupPointsPolicy
@@ -48,8 +50,18 @@ class PolygonProblemDownloaderTests(private val downloader: PolygonProblemDownlo
         problemId: Int,
         includeTests: Boolean = false,
     ) {
-        shouldThrowExactly<TException> { downloader.downloadProblem(problemId, includeTests) }
-            .shouldBeInstanceOf<ProblemDownloadingException>()
+        shouldThrowExactly<TException> {
+            downloader.downloadProblem(
+                problemId,
+                includeTests,
+                statementFormat = StatementFormat.PDF,
+                language = "russian"
+            )
+        }.shouldBeInstanceOf<ProblemDownloadingException>()
+    }
+
+    suspend fun PolygonProblemDownloader.downloadProblem(problemId: Int, includeTests: Boolean): IRProblem {
+        return downloadProblem(problemId, includeTests, StatementFormat.PDF, "russian")
     }
 
     init {
