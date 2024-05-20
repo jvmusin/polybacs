@@ -85,14 +85,16 @@ class PolygonApiExtensionsTest(polygonApi: PolygonApi) : BehaviorSpec({
                 val problemId = TestProblems.problemWithTwoSolutions
                 val packageId = polygonApi.getLatestPackageId(problemId)
                 val filesFromZipPackage = polygonApi.getFilesFromZipPackage(problemId, packageId, "files")
-                filesFromZipPackage.shouldHaveSize(6)
-                filesFromZipPackage.shouldHaveKeys(
-                    "check.cpp",
-                    "testlib.h",
-                    "statements.ftl",
-                    "problem.tex",
-                    "olymp.sty",
-                    "towin.exe"
+                filesFromZipPackage.keys.shouldBe(
+                    setOf(
+                        "check.cpp",
+                        "testlib.h",
+                        "statements.ftl",
+                        "problem.tex",
+                        "olymp.sty",
+                        "towin.exe",
+                        "tutorial.tex"
+                    )
                 )
             }
             And("ignored check.cpp") {
