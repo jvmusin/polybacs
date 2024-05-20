@@ -36,7 +36,7 @@ class PolygonService(
         try {
             return problemDownloader.downloadProblem(problemId, includeTests, statementFormat, language)
         } catch (e: Exception) {
-            throw ProblemDownloadingException("Не удалось скачать задачу: ${e.message}", e)
+            throw ProblemDownloadingException("Failed to download problem $problemId: ${e.message}", e)
         }
     }
 

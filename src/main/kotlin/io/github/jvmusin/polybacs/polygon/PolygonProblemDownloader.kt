@@ -175,7 +175,7 @@ class PolygonProblemDownloader(
         val name = "check.cpp"
         val file = polygonApi.getFileFromZipPackage(problemId, packageId, name)
             ?: throw CheckerNotFoundException(
-                "Не найден чекер '$name'. Другие чекеры не поддерживаются"
+                "Checker named '$name' not found. Other checkers are bot supported"
             )
         return IRChecker(name, file.decodeToString())
     }

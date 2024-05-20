@@ -171,12 +171,12 @@ function StatementCard({ info, form }: { info: ProblemInfo, form: FormType }) {
                     onBlur={onBlur}
                 >
                   <div className="space-y-2">
-                    {info.statementLanguages.map((lang) => {
-                      return <RadioField className="flex items-center space-x-2 space-y-0">
+                    {info.statementLanguages.length ? info.statementLanguages.map((lang) => {
+                      return <RadioField className="flex items-center space-x-2 space-y-0" key={lang}>
                         <Radio value={lang}>{lang}</Radio>
                         <Label className="font-normal">{lang}</Label>
                       </RadioField>
-                    })}
+                    }) : <span className="text-red-700 font-bold">No statements found!</span>}
                   </div>
                 </RadioGroup>
             )}
