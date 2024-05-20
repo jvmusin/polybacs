@@ -19,7 +19,8 @@ data class AdditionalProblemProperties(
     val suffix: String? = null,
     val timeLimitMillis: Int? = null,
     val memoryLimitMegabytes: Int? = null,
-    val statementFormat: StatementFormat = PDF
+    val statementFormat: StatementFormat = PDF,
+    val language: String,
 ) {
     /** Build problem name prefixing it with [prefix] and suffixing with [suffix] if they are not `null`. */
     fun buildFullName() = "${prefix.orEmpty()}$name${suffix.orEmpty()}"

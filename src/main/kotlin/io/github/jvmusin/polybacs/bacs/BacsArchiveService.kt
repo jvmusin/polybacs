@@ -127,7 +127,7 @@ class BacsArchiveService(
     /** Uploads [problem] to Bacs archive with extra [properties]. */
     suspend fun uploadProblem(
         problem: IRProblem,
-        properties: AdditionalProblemProperties = AdditionalProblemProperties(problem.name),
+        properties: AdditionalProblemProperties,
     ): String {
         val zip = problem.toZipArchive(properties)
         uploadProblem(zip)

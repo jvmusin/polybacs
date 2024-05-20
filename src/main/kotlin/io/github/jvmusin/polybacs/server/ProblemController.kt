@@ -28,7 +28,8 @@ class ProblemController(
     suspend fun getProblem(@PathVariable problemId: Int): ProblemInfo {
         val problemInfo = polygonService.getProblemInfo(problemId)
         val problem = polygonService.getProblems().single { it.id == problemId }
-        return problemInfo.toDto(problem)
+        val statementLanguages = polygonService.getProblemStatementLanguages(problemId)
+        return problemInfo.toDto(problem, statementLanguages)
     }
 
     @PostMapping("/download")
@@ -40,7 +41,7 @@ class ProblemController(
         response: HttpServletResponse,
     ) {
         val updateConsumer = statusTracker.newTrack(problemId, properties.buildFullName(), session.id)
-        val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat)
+        val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat, properties.language)
         val zip = irProblem.toZipArchive(properties)
         updateConsumer.consumeUpdate(
             "The problem is downloaded from Polygon, now saving the archive",
@@ -71,10 +72,11 @@ suspend fun downloadProblem(
     problemId: Int,
     polygonService: PolygonService,
     statementFormat: StatementFormat = StatementFormat.PDF,
+    language: String
 ): IRProblem {
     try {
         updateConsumer.consumeUpdate("Downloading problem from Polygon", StatusTrackUpdateSeverity.NEUTRAL)
-        return polygonService.downloadProblem(problemId, true, statementFormat)
+        return polygonService.downloadProblem(problemId, true, statementFormat, language)
     } catch (e: ProblemDownloadingException) {
         val msg = "Failed to download the problem from Polygon: ${e.message}"
         val logger = LoggerFactory.getLogger("io.github.jvmusin.polybacs.server.downloadProblem")
@@ -92,7 +94,7 @@ suspend fun transferProblemToBacs(
     polygonService: PolygonService,
     bacsArchiveService: BacsArchiveService,
 ) {
-    val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat)
+    val irProblem = downloadProblem(updateConsumer, problemId, polygonService, properties.statementFormat, properties.language)
     updateConsumer.consumeUpdate("Задача выкачана из полигона, закидываем в бакс", StatusTrackUpdateSeverity.NEUTRAL)
     try {
         bacsArchiveService.uploadProblem(irProblem, properties)

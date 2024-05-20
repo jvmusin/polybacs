@@ -29,13 +29,14 @@ class PolygonService(
      */
     suspend fun downloadProblem(
         problemId: Int,
-        includeTests: Boolean = false,
-        statementFormat: StatementFormat = StatementFormat.PDF
+        includeTests: Boolean,
+        statementFormat: StatementFormat,
+        language: String,
     ): IRProblem {
         try {
-            return problemDownloader.downloadProblem(problemId, includeTests, statementFormat)
+            return problemDownloader.downloadProblem(problemId, includeTests, statementFormat, language)
         } catch (e: Exception) {
-            throw ProblemDownloadingException("Не удалось скачать задачу: ${e.message}", e)
+            throw ProblemDownloadingException("Failed to download problem $problemId: ${e.message}", e)
         }
     }
 
@@ -48,4 +49,7 @@ class PolygonService(
      * @throws NoSuchProblemException if the problem is not found or if access to the problem is denied.
      */
     suspend fun getProblemInfo(problemId: Int) = polygonApi.getProblemInfo(problemId).extract()
+
+    /** Returns a set of statement languages. */
+    suspend fun getProblemStatementLanguages(problemId: Int) = polygonApi.getStatements(problemId).extract().keys
 }

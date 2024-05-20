@@ -3,8 +3,6 @@ package io.github.jvmusin.polybacs.polygon
 import io.github.jvmusin.polybacs.polygon.TestProblems.noBuiltPackagesProblem
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithOnlyReadAccess
 import io.github.jvmusin.polybacs.polygon.TestProblems.totallyUnknownProblem
-import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadingException
-import io.github.jvmusin.polybacs.polygon.exception.downloading.resource.CheckerNotFoundException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.BehaviorSpec
@@ -42,22 +40,22 @@ class PolygonServiceTests(service: PolygonService) : BehaviorSpec({
         }
     }
 
-    xGiven("getProblems") {
-        When("there is a problem with no appropriate checker") {
-            Then("it's found and logged and then an exception is thrown") {
-                for (problem in service.getProblems()) {
-                    try {
-                        service.downloadProblem(problem.id)
-                    } catch (e: ProblemDownloadingException) {
-                        if (e.cause!!::class == CheckerNotFoundException::class) {
-                            System.err.println("FOUND A PROBLEM WITH NO CPP CHECKER: ${problem.id}")
-                            throw e
-                        } else {
-                            System.err.println("PROBLEM ${problem.id} FAILED WITH AN EXCEPTION ${e.message}")
-                        }
-                    }
-                }
-            }
-        }
-    }
+//    xGiven("getProblems") {
+//        When("there is a problem with no appropriate checker") {
+//            Then("it's found and logged and then an exception is thrown") {
+//                for (problem in service.getProblems()) {
+//                    try {
+//                        service.downloadProblem(problem.id)
+//                    } catch (e: ProblemDownloadingException) {
+//                        if (e.cause!!::class == CheckerNotFoundException::class) {
+//                            System.err.println("FOUND A PROBLEM WITH NO CPP CHECKER: ${problem.id}")
+//                            throw e
+//                        } else {
+//                            System.err.println("PROBLEM ${problem.id} FAILED WITH AN EXCEPTION ${e.message}")
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 })

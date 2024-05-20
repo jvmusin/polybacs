@@ -26,6 +26,7 @@ const ProblemInfoSchema = z.object({
   interactive: z.boolean(),
   timeLimitMillis: z.number(),
   memoryLimitMegabytes: z.number(),
+  statementLanguages: z.array(z.string()),
 })
 export type ProblemInfo = z.infer<typeof ProblemInfoSchema>
 export async function getProblemInfo(problemId: number): Promise<ProblemInfo> {
@@ -74,6 +75,7 @@ type AdditionalProperties = {
   timeLimitMillis: number
   memoryLimitMegabytes: number
   statementFormat: string
+  language: string
 }
 
 export function downloadProblem({

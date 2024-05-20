@@ -1,6 +1,7 @@
 package io.github.jvmusin.polybacs.sybon
 
 import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
+import io.github.jvmusin.polybacs.api.StatementFormat
 import io.github.jvmusin.polybacs.bacs.BacsArchiveService
 import io.github.jvmusin.polybacs.polygon.PolygonService
 import io.github.jvmusin.polybacs.sybon.api.SybonArchiveApi
@@ -23,15 +24,23 @@ class SybonSpecialCollectionTests(
 ) : StringSpec({
     val specialCollectionId = 10023
     val polygonProblemId = 147360
+    val polygonProblemStatementFormat = StatementFormat.PDF
+    val polygonProblemStatementLanguage = "russian"
     fun properties(problemName: String) = AdditionalProblemProperties(
         name = problemName,
         suffix = LocalDateTime.now().format(
             DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")
-        ) + "-polybacs-test-rustam"
+        ) + "-polybacs-test-rustam",
+        language = "russian",
     )
 
     "Full cycle" {
-        val irProblem = polygonService.downloadProblem(polygonProblemId, includeTests = true)
+        val irProblem = polygonService.downloadProblem(
+            polygonProblemId,
+            true,
+            polygonProblemStatementFormat,
+            polygonProblemStatementLanguage
+        )
         val fullName = bacsArchiveService.uploadProblem(irProblem, properties(irProblem.name))
         println("Problem full name: $fullName")
         delay(2.minutes) // wait for the problem to appear in the archive

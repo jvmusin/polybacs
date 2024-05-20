@@ -50,6 +50,7 @@ class PolygonProblemDownloader(
         val packageId: Int,
         val includeTests: Boolean,
         val statementFormat: StatementFormat,
+        val language: String,
     )
 
     /**
@@ -143,10 +144,11 @@ class PolygonProblemDownloader(
     private suspend fun downloadStatement(
         problemId: Int,
         packageId: Int,
-        format: StatementFormat = StatementFormat.PDF,
+        format: StatementFormat,
+        language: String,
     ): IRStatement {
-        val (language, statement) = polygonApi.getStatement(problemId)
-            ?: throw StatementNotFoundException("No statements found")
+        val (language, statement) = polygonApi.getStatement(problemId, language)
+            ?: throw StatementNotFoundException("Statement on $language in $format not found")
 
         val files = polygonApi.getStatementFiles(problemId, packageId, format, language)
         val mainProblemFileName = "problem.${format.lowercase}"
@@ -173,7 +175,7 @@ class PolygonProblemDownloader(
         val name = "check.cpp"
         val file = polygonApi.getFileFromZipPackage(problemId, packageId, name)
             ?: throw CheckerNotFoundException(
-                "Не найден чекер '$name'. Другие чекеры не поддерживаются"
+                "Checker named '$name' not found. Other checkers are bot supported"
             )
         return IRChecker(name, file.decodeToString())
     }
@@ -362,10 +364,11 @@ class PolygonProblemDownloader(
         packageId: Int,
         includeTests: Boolean,
         statementFormat: StatementFormat,
+        language: String
     ): IRProblem? {
-        cache[FullPackageId(packageId, includeTests, statementFormat)].also { if (it != null) return it }
+        cache[FullPackageId(packageId, includeTests, statementFormat, language)].also { if (it != null) return it }
         if (!includeTests) {
-            cache[FullPackageId(packageId, true, statementFormat)].also { if (it != null) return it }
+            cache[FullPackageId(packageId, true, statementFormat, language)].also { if (it != null) return it }
         }
         return null
     }
@@ -382,9 +385,10 @@ class PolygonProblemDownloader(
         packageId: Int,
         includeTests: Boolean,
         statementFormat: StatementFormat,
+        language: String,
         problem: IRProblem,
     ) {
-        cache[FullPackageId(packageId, includeTests, statementFormat)] = problem
+        cache[FullPackageId(packageId, includeTests, statementFormat, language)] = problem
     }
 
     /**
@@ -402,19 +406,20 @@ class PolygonProblemDownloader(
     suspend fun downloadProblem(
         problemId: Int,
         includeTests: Boolean,
-        statementFormat: StatementFormat = StatementFormat.PDF
+        statementFormat: StatementFormat = StatementFormat.PDF,
+        language: String
     ): IRProblem = withContext(Dispatchers.IO) {
         // eagerly check for access
         val problem = getProblem(problemId)
 
         val packageId = polygonApi.getLatestPackageId(problemId)
 
-        val cached = getProblemFromCache(packageId, includeTests, statementFormat)
+        val cached = getProblemFromCache(packageId, includeTests, statementFormat, language)
         if (cached != null) return@withContext cached
 
         val info = async { getProblemInfo(problemId) }
-        val statement = async { downloadStatement(problemId, packageId, statementFormat) }
-        val tutorial = async { polygonApi.getTutorialRaw(problemId, packageId) }
+        val statement = async { downloadStatement(problemId, packageId, statementFormat, language) }
+        val tutorial = async { polygonApi.getTutorialRaw(problemId, packageId, statementFormat, language) }
         val checker = async { downloadChecker(problemId, packageId) }
 
         val testsAndTestGroups = async {
@@ -452,7 +457,7 @@ class PolygonProblemDownloader(
         val miscFiles = listOf(
             IRMiscFile("materials/problem.xml", problemXml.await()),
         ) +
-                listOfNotNull(tutorial.await()?.let { IRMiscFile("tutorial/tutorial.pdf", it) }) +
+                listOfNotNull(tutorial.await()?.let { IRMiscFile("tutorial/tutorial.${statementFormat.lowercase}", it) }) +
                 filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
                 statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
 
@@ -466,6 +471,6 @@ class PolygonProblemDownloader(
             checker = checker.await(),
             solutions = solutions.await(),
             miscFiles = miscFiles,
-        ).also { saveProblemToCache(packageId, includeTests, statementFormat, it) }
+        ).also { saveProblemToCache(packageId, includeTests, statementFormat, language, it) }
     }
 }
