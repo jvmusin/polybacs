@@ -96,8 +96,8 @@ suspend fun PolygonApi.getStatementFiles(
 suspend fun PolygonApi.getTutorialRaw(
     problemId: Int,
     packageId: Int,
-    format: StatementFormat = StatementFormat.PDF,
-    language: String = "russian",
+    format: StatementFormat,
+    language: String,
 ): ByteArray? {
     val formatString = format.lowercase
     val path = listOf(
