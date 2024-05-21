@@ -24,8 +24,8 @@ object ContactsGenerator {
         val owner = problem.owner
         val timeNow = ZonedDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)
 
-        appendLine("This problem was converted from polygon.codeforces.com package")
-        appendLine("You can contact $owner and request access for original polygon problem or additional info")
+        appendLine("This problem was converted from polygon.codeforces.com package using Polybacs")
+        appendLine("You can contact $owner and request access for original Polygon problem or additional info")
         appendLine()
         ownerContacts[owner]?.let { contacts ->
             contacts.forEach(::appendLine)
