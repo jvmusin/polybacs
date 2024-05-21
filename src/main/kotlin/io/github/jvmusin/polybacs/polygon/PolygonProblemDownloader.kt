@@ -471,6 +471,7 @@ class PolygonProblemDownloader(
             checker = checker.await(),
             solutions = solutions.await(),
             miscFiles = miscFiles,
+            revision = problem.revision,
         ).also { saveProblemToCache(packageId, includeTests, statementFormat, language, it) }
     }
 }
