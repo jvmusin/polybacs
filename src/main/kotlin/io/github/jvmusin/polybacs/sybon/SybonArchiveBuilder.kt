@@ -114,6 +114,10 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties): Path {
         }
     }
 
+    fun writeContacts() {
+        miscPath.resolve("contacts.txt").writeText(ContactsGenerator.generate(this))
+    }
+
     writeConfig()
     writeFormat()
     writeChecker()
@@ -121,6 +125,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties): Path {
     writeStatement()
     writeTests()
     writeMiscFiles()
+    writeContacts()
 
     val parent = destinationPath.parent
     val zipPath = Paths.get("ready", "${parent.fileName}.zip")
