@@ -32,7 +32,7 @@ object ContactsGenerator {
             appendLine()
         }
         appendLine("Polygon name: ${problem.name}")
-//        appendLine("Polygon revision: ${problem.revision}")
+        appendLine("Polygon revision: ${problem.revision}")
 //        appendLine("Polygon URL: ${problem.polygonUrl}")
         appendLine("Conversion timestamp: $timeNow")
 //        appendLine("BACS converter revision: 2023-11-11T00:00:00")

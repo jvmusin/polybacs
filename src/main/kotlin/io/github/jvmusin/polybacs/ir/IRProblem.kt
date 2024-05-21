@@ -12,6 +12,7 @@ data class IRProblem(
     val checker: IRChecker,
     val solutions: List<IRSolution>,
     val miscFiles: List<IRMiscFile>,
+    val revision: Int,
 )
 
 interface IRFile {
