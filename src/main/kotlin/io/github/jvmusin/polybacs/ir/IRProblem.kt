@@ -44,8 +44,31 @@ data class IRTest(
     val points: Int?,
     val groupName: String?,
 ) {
-    override fun equals(other: Any?) = throw NotImplementedError()
-    override fun hashCode() = throw NotImplementedError()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as IRTest
+
+        if (index != other.index) return false
+        if (isSample != other.isSample) return false
+        if (!input.contentEquals(other.input)) return false
+        if (!output.contentEquals(other.output)) return false
+        if (points != other.points) return false
+        if (groupName != other.groupName) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = index
+        result = 31 * result + isSample.hashCode()
+        result = 31 * result + input.contentHashCode()
+        result = 31 * result + output.contentHashCode()
+        result = 31 * result + (points ?: 0)
+        result = 31 * result + (groupName?.hashCode() ?: 0)
+        return result
+    }
 }
 
 data class IRChecker(val name: String, val content: String)
