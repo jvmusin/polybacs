@@ -346,8 +346,10 @@ class PolygonProblemDownloader(
                 ?.let { test.points!!.toInt() }
 
             @Suppress("USELESS_ELVIS") // empty response somehow becomes null
-            val output = answers[i].await() ?: ""
-            IRTest(test.index, test.useInStatements, inputs[i].await(), output, points, test.group)
+            val input = inputs[i].await() ?: byteArrayOf()
+            @Suppress("USELESS_ELVIS") // empty response somehow becomes null
+            val output = answers[i].await() ?: byteArrayOf()
+            IRTest(test.index, test.useInStatements, input, output, points, test.group)
         }
         tests to testGroups
     }

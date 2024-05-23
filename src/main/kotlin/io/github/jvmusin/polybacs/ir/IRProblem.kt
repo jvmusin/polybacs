@@ -20,8 +20,15 @@ interface IRFile {
     val content: ByteArray
 }
 
-data class IRStatementExtraFile(override val destination: String, override val content: ByteArray) : IRFile
-data class IRMiscFile(override val destination: String, override val content: ByteArray) : IRFile
+data class IRStatementExtraFile(override val destination: String, override val content: ByteArray) : IRFile {
+    override fun equals(other: Any?) = throw NotImplementedError()
+    override fun hashCode() = throw NotImplementedError()
+}
+
+data class IRMiscFile(override val destination: String, override val content: ByteArray) : IRFile {
+    override fun equals(other: Any?) = throw NotImplementedError()
+    override fun hashCode() = throw NotImplementedError()
+}
 
 data class IRStatement(
     val name: String,
@@ -32,11 +39,37 @@ data class IRStatement(
 data class IRTest(
     val index: Int,
     val isSample: Boolean,
-    val input: String,
-    val output: String,
+    val input: ByteArray,
+    val output: ByteArray,
     val points: Int?,
     val groupName: String?,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as IRTest
+
+        if (index != other.index) return false
+        if (isSample != other.isSample) return false
+        if (!input.contentEquals(other.input)) return false
+        if (!output.contentEquals(other.output)) return false
+        if (points != other.points) return false
+        if (groupName != other.groupName) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = index
+        result = 31 * result + isSample.hashCode()
+        result = 31 * result + input.contentHashCode()
+        result = 31 * result + output.contentHashCode()
+        result = 31 * result + (points ?: 0)
+        result = 31 * result + (groupName?.hashCode() ?: 0)
+        return result
+    }
+}
 
 data class IRChecker(val name: String, val content: String)
 data class IRLimits(val timeLimitMillis: Int, val memoryLimitMegabytes: Int)
