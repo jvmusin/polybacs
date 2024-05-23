@@ -94,14 +94,14 @@ interface PolygonApi {
         @RequestParam("problemId") problemId: Int,
         @RequestParam("testIndex") testIndex: Int,
         @RequestParam("testset") testSet: String = DEFAULT_TESTSET,
-    ): String
+    ): ByteArray
 
     @PostExchange("problem.testAnswer")
     suspend fun getTestAnswer(
         @RequestParam("problemId") problemId: Int,
         @RequestParam("testIndex") testIndex: Int,
         @RequestParam("testset") testSet: String = DEFAULT_TESTSET,
-    ): String
+    ): ByteArray
 
     @PostExchange("problem.viewTestGroup")
     suspend fun getTestGroup(

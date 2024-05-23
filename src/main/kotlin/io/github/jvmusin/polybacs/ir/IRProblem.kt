@@ -20,8 +20,15 @@ interface IRFile {
     val content: ByteArray
 }
 
-data class IRStatementExtraFile(override val destination: String, override val content: ByteArray) : IRFile
-data class IRMiscFile(override val destination: String, override val content: ByteArray) : IRFile
+data class IRStatementExtraFile(override val destination: String, override val content: ByteArray) : IRFile {
+    override fun equals(other: Any?) = throw NotImplementedError()
+    override fun hashCode() = throw NotImplementedError()
+}
+
+data class IRMiscFile(override val destination: String, override val content: ByteArray) : IRFile {
+    override fun equals(other: Any?) = throw NotImplementedError()
+    override fun hashCode() = throw NotImplementedError()
+}
 
 data class IRStatement(
     val name: String,
@@ -32,11 +39,14 @@ data class IRStatement(
 data class IRTest(
     val index: Int,
     val isSample: Boolean,
-    val input: String,
-    val output: String,
+    val input: ByteArray,
+    val output: ByteArray,
     val points: Int?,
     val groupName: String?,
-)
+) {
+    override fun equals(other: Any?) = throw NotImplementedError()
+    override fun hashCode() = throw NotImplementedError()
+}
 
 data class IRChecker(val name: String, val content: String)
 data class IRLimits(val timeLimitMillis: Int, val memoryLimitMegabytes: Int)

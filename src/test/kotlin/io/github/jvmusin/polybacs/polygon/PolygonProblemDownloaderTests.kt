@@ -60,9 +60,19 @@ class PolygonProblemDownloaderTests(private val downloader: PolygonProblemDownlo
         }.shouldBeInstanceOf<ProblemDownloadingException>()
     }
 
-    suspend fun PolygonProblemDownloader.downloadProblem(problemId: Int, includeTests: Boolean): IRProblem {
+    private suspend fun PolygonProblemDownloader.downloadProblem(problemId: Int, includeTests: Boolean): IRProblem {
         return downloadProblem(problemId, includeTests, StatementFormat.PDF, "russian")
     }
+
+    @Suppress("TestFunctionName")
+    private fun IRTest(
+        index: Int,
+        isSample: Boolean,
+        input: String,
+        output: String,
+        points: Int?,
+        groupName: String?,
+    ) = IRTest(index, isSample, input.toByteArray(), output.toByteArray(), points, groupName)
 
     init {
         Given("downloadProblem") {

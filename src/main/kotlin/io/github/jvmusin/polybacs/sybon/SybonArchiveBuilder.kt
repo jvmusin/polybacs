@@ -101,7 +101,7 @@ fun IRProblem.toZipArchive(properties: AdditionalProblemProperties): Path {
 
     fun writeTests() {
         requireNotNull(tests)
-        fun writeTest(index: Int, type: String, content: String) = testsPath.resolve("$index.$type").writeText(content)
+        fun writeTest(index: Int, type: String, content: ByteArray) = testsPath.resolve("$index.$type").writeBytes(content)
         for (t in tests) writeTest(t.index, "in", t.input)
         for (t in tests) writeTest(t.index, "out", t.output)
     }
