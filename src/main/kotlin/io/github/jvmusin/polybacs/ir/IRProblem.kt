@@ -13,6 +13,7 @@ data class IRProblem(
     val solutions: List<IRSolution>,
     val miscFiles: List<IRMiscFile>,
     val revision: Int,
+    val polygonUrl: String
 )
 
 interface IRFile {

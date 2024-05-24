@@ -33,7 +33,7 @@ object ContactsGenerator {
         }
         appendLine("Polygon name: ${problem.name}")
         appendLine("Polygon revision: ${problem.revision}")
-//        appendLine("Polygon URL: ${problem.polygonUrl}") // TODO: Will be available when we learn to read problem.xml
+        appendLine("Polygon URL: ${problem.polygonUrl}")
         appendLine("Conversion timestamp: $timeNow")
 //        appendLine("BACS converter revision: 2023-11-11T00:00:00")
     }
