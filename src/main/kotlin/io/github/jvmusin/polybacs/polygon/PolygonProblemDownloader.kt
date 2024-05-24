@@ -347,6 +347,7 @@ class PolygonProblemDownloader(
 
             @Suppress("USELESS_ELVIS") // empty response somehow becomes null
             val input = inputs[i].await() ?: byteArrayOf()
+
             @Suppress("USELESS_ELVIS") // empty response somehow becomes null
             val output = answers[i].await() ?: byteArrayOf()
             IRTest(test.index, test.useInStatements, input, output, points, test.group)
@@ -456,12 +457,22 @@ class PolygonProblemDownloader(
         val statementsFiles =
             async { polygonApi.getFilesFromZipPackage(problemId, packageId, "statements") { !it.startsWith('.') } }
 
-        val miscFiles = listOf(
-            IRMiscFile("materials/problem.xml", problemXml.await()),
-        ) +
-                listOfNotNull(tutorial.await()?.let { IRMiscFile("tutorial/tutorial.${statementFormat.lowercase}", it) }) +
-                filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
-                statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
+        val miscFiles = async {
+            listOf(
+                IRMiscFile("materials/problem.xml", problemXml.await()),
+            ) +
+                    listOfNotNull(
+                        tutorial.await()?.let { IRMiscFile("tutorial/tutorial.${statementFormat.lowercase}", it) }) +
+                    filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
+                    statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
+        }
+
+        val polygonUrl = async {
+            val xml = problemXml.await().decodeToString()
+            val r = Regex("url=\"(.*)\"")
+            val url = r.find(xml.lines()[1])!!.groupValues[1]
+            url
+        }
 
         IRProblem(
             name = problem.name,
@@ -472,8 +483,9 @@ class PolygonProblemDownloader(
             groups = testsAndTestGroups.await().second,
             checker = checker.await(),
             solutions = solutions.await(),
-            miscFiles = miscFiles,
+            miscFiles = miscFiles.await(),
             revision = problem.revision,
+            polygonUrl = polygonUrl.await()
         ).also { saveProblemToCache(packageId, includeTests, statementFormat, language, it) }
     }
 }
