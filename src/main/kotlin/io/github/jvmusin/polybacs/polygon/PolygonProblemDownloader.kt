@@ -75,19 +75,18 @@ class PolygonProblemDownloader(
     private suspend fun getProblem(problemId: Int): Problem {
         return polygonApi.getProblem(problemId).apply {
             if (accessType == Problem.AccessType.READ) {
-                throw AccessDeniedException("Нет доступа на запись. Дайте WRITE доступ пользователю Musin")
+                throw AccessDeniedException("Give WRITE permissions for this problem to Musin to use it")
             }
             if (modified) {
                 throw ProblemModifiedException(
-                    "Файлы задачи изменены. Сначала откатите изменения или закоммитьте их и соберите новый пакет " +
-                            "(скорее всего (99.9%) косяк Рустама)"
+                    "Problem is modified. Rollback or commit changes."
                 )
             }
             if (latestPackage == null) {
-                throw NoPackagesBuiltException("У задачи нет собранных пакетов. Соберите пакет")
+                throw NoPackagesBuiltException("There are no built packages for the problem. Build a new package.")
             }
             if (latestPackage != revision) {
-                throw OldBuiltPackageException("Последний собранный для задачи пакет не актуален. Соберите новый")
+                throw OldBuiltPackageException("There is no built package for the latest revision. Build a new package.")
             }
         }
     }
@@ -102,7 +101,7 @@ class PolygonProblemDownloader(
     private suspend fun getProblemInfo(problemId: Int): ProblemInfo {
         return polygonApi.getProblemInfo(problemId).extract().apply {
             if (interactive) {
-                throw UnsupportedFormatException("Интерактивные задачи не поддерживаются")
+                throw UnsupportedFormatException("Interactive problems are not supported.")
             }
         }
     }
@@ -230,7 +229,7 @@ class PolygonProblemDownloader(
      */
     private fun validateTests(tests: List<PolygonTest>, testGroupsEnabled: Boolean) {
         if (tests.withIndex().any { (index, test) -> index + 1 != test.index }) {
-            throw NonSequentialTestIndicesException("Номера тестов должны идти от 1 до их количества")
+            throw NonSequentialTestIndicesException("Tests numbers should go from 1 to their count")
         }
 
         val samples = tests.filter { it.useInStatements }
@@ -238,7 +237,7 @@ class PolygonProblemDownloader(
 
         if (anySamples) {
             if (!tests.first().useInStatements || tests.sequentiallyGroupedBy { it.useInStatements }.size > 2) {
-                throw SamplesNotFirstException("Сэмплы должны идти перед всеми остальными тестами")
+                throw SamplesNotFirstException("Samples should go before any other tests")
             }
         }
 
@@ -246,15 +245,14 @@ class PolygonProblemDownloader(
 
         val groups = tests.sequentiallyGroupedBy { it.group }
         if (groups.size != groups.distinctBy { it.key }.size) {
-            throw NonSequentialTestsInTestGroupException("Тесты из одной группы должны идти последовательно")
+            throw NonSequentialTestsInTestGroupException("Tests from a single group should go together")
         }
         if (anySamples) {
             if (groups.first().size != samples.size) {
-                throw SamplesNotFormingFirstTestGroupException("Сэмплы должны образовывать первую группу тестов")
+                throw SamplesNotFormingFirstTestGroupException("Samples should be the first test group")
             }
             if (samples.any { it.points != 0.0 }) {
-                // TODO check if we really need to check for null here
-                throw PointsOnSampleException("Сэмплы не должны давать баллы")
+                throw PointsOnSampleException("Samples should give points")
             }
         }
     }
@@ -283,16 +281,15 @@ class PolygonProblemDownloader(
         }
 
         if (rawTests.any { it.group == null }) {
-            throw MissingTestGroupException("Группы тестов должны быть установлены на всех тестах")
+            throw MissingTestGroupException("Test group should be set for all tests")
         }
         if (rawTests.any { it.points == null }) {
             throw TestPointsDisabledException(
-                "Если используются группы тестов, то баллы должны быть включены, " +
-                        "галочка 'Are test points enabled?' в полигоне"
+                "To use test groups, toggle on the 'Are test points enabled?' option in Polygon"
             )
         }
         if (rawTests.any { it.points != it.points!!.toInt().toDouble() }) {
-            throw NonIntegralTestPointsException("Баллы должны быть целочисленными")
+            throw NonIntegralTestPointsException("Test points should be integers")
         }
 
         val groups = rawTestGroups.associateBy { it.name }
