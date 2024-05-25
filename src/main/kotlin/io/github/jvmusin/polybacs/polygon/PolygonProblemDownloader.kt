@@ -1,5 +1,9 @@
 package io.github.jvmusin.polybacs.polygon
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.jvmusin.polybacs.api.StatementFormat
 import io.github.jvmusin.polybacs.ir.*
 import io.github.jvmusin.polybacs.polygon.api.*
@@ -147,7 +151,7 @@ class PolygonProblemDownloader(
         format: StatementFormat,
         language: String,
     ): IRStatement {
-        val (language, statement) = polygonApi.getStatement(problemId, language)
+        val statement = polygonApi.getStatement(problemId, language)
             ?: throw StatementNotFoundException("Statement on $language in $format not found")
 
         val files = polygonApi.getStatementFiles(problemId, packageId, format, language)
@@ -469,9 +473,13 @@ class PolygonProblemDownloader(
 
         val polygonUrl = async {
             val xml = problemXml.await().decodeToString()
-            val r = Regex("url=\"(.*)\"")
-            val url = r.find(xml.lines()[1])!!.groupValues[1]
-            url
+            val mapper = XmlMapper().registerKotlinModule()
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+
+            data class ProblemXml(val url: String)
+
+            val parsedProblemXml = mapper.readValue<ProblemXml>(xml)
+            parsedProblemXml.url
         }
 
         IRProblem(
