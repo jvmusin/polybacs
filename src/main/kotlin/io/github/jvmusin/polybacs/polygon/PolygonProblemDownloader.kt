@@ -115,12 +115,6 @@ class PolygonProblemDownloader(
             val mathJaxNew = """
                 <SCRIPT async="" src="https://statement.bacs.cs.istu.ru/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
             """.trimIndent()
-            val cssWas = """
-                <LINK href="problem-statement.css" rel="stylesheet" type="text/css">
-            """.trimIndent() // TODO: Drop this replacement and put in the archive maybe
-            val cssNew = """
-                <LINK href="https://statement.bacs.cs.istu.ru/problem-statement.css" rel="stylesheet" type="text/css">
-            """.trimIndent()
 
             fun String.replaceSurely(was: String, new: String) = replace(was, new).also {
                 require(it != this) {
@@ -129,7 +123,6 @@ class PolygonProblemDownloader(
             }
             decodeToString()
                 .replaceSurely(mathJaxWas, mathJaxNew)
-                .replaceSurely(cssWas, cssNew)
                 .encodeToByteArray()
         } else {
             this
