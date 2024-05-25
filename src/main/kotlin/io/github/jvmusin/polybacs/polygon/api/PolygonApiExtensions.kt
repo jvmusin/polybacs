@@ -121,10 +121,11 @@ suspend fun PolygonApi.getTutorialRaw(
 suspend fun PolygonApi.getProblem(problemId: Int) = getProblems().extract().singleOrNull { it.id == problemId }
     ?: throw NoSuchProblemException("There is no problem with id $problemId")
 
-suspend fun PolygonApi.getStatement(problemId: Int, language: String? = null): Pair<String, Statement>? {
-    return getStatements(problemId).extract().entries.firstOrNull {
-        language == null || it.key == language
-    }?.toPair()
+suspend fun PolygonApi.getStatement(problemId: Int, language: String? = null): Statement? {
+    return getStatements(problemId).extract().let {
+        if (language == null) it.values.first() // return any statement
+        else it[language]
+    }
 }
 
 suspend fun PolygonApi.getLatestPackageId(problemId: Int): Int {

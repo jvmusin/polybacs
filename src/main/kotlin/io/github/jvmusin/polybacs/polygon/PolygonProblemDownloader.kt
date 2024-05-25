@@ -151,7 +151,7 @@ class PolygonProblemDownloader(
         format: StatementFormat,
         language: String,
     ): IRStatement {
-        val (language, statement) = polygonApi.getStatement(problemId, language)
+        val statement = polygonApi.getStatement(problemId, language)
             ?: throw StatementNotFoundException("Statement on $language in $format not found")
 
         val files = polygonApi.getStatementFiles(problemId, packageId, format, language)
