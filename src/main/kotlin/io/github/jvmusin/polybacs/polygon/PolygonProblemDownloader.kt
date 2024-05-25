@@ -458,8 +458,6 @@ class PolygonProblemDownloader(
             listOf(
                 IRMiscFile("materials/problem.xml", problemXml.await()),
             ) +
-                    listOfNotNull(
-                        tutorial.await()?.let { IRMiscFile("tutorial/tutorial.${statementFormat.lowercase}", it) }) +
                     filesFiles.await().map { IRMiscFile("materials/files/${it.key}", it.value) } +
                     statementsFiles.await().map { IRMiscFile("materials/statements/${it.key}", it.value) }
         }
