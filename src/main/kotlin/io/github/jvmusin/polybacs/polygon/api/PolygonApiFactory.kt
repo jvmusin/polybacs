@@ -2,7 +2,9 @@ package io.github.jvmusin.polybacs.polygon.api
 
 import io.github.jvmusin.polybacs.polygon.PolygonConfig
 import io.github.jvmusin.polybacs.util.sha512
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.reactor.awaitSingle
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -16,11 +18,14 @@ import org.springframework.web.service.invoker.createClient
 import org.springframework.web.util.UriComponentsBuilder
 import reactor.core.publisher.Flux
 import java.net.URLDecoder
+import kotlin.time.Duration.Companion.seconds
 
 @Configuration
 class PolygonApiFactory(
     private val config: PolygonConfig,
 ) {
+    private val logger = LoggerFactory.getLogger(PolygonApiFactory::class.java)
+
     /**
      * Changes response code from `400` to `200`.
      *
@@ -95,11 +100,28 @@ class PolygonApiFactory(
         codecs.defaultCodecs().maxInMemorySize(-1)
     }
 
+    private val retryOn5xx = createFilter { request, next ->
+        val totalRetries = 20 // Will run at most totalRetries+1 times
+        val retryDelay = 2.seconds
+        suspend fun go(retriesLeft: Int): ClientResponse {
+            val response = next.exchange(request)
+            val statusCode = response.statusCode()
+            if (retriesLeft > 0 && response.statusCode().is5xxServerError) {
+                logger.info("Got response code $statusCode from ${request.url()}, retrying in $retryDelay (retries left ${retriesLeft - 1})")
+                delay(retryDelay)
+                return go(retriesLeft - 1)
+            }
+            return response
+        }
+        go(totalRetries)
+    }
+
     private inline fun <reified T : Any> createApi(): T {
         val webClientBuilder = WebClient.builder()
             .codecs(maxInMemorySizeCodecConfigurer)
             .filter(fixResponseContentTypeFilter)
             .filter(responseCode400to200Filter)
+            .filter(retryOn5xx)
             .filter(insertApiSigFilter)
             .filter(logRequestFilter)
         // TODO: Add 500 and 429 retry filters
