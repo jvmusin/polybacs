@@ -36,7 +36,6 @@ import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.*
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.NonIntegralTestPointsException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.PointsOnSampleException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.TestPointsDisabledException
-import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.BehaviorSpec
@@ -80,13 +79,6 @@ class PolygonProblemDownloaderTests(private val downloader: PolygonProblemDownlo
                 Then("throws NoSuchProblemException") {
                     shouldThrowExactly<NoSuchProblemException> {
                         downloader.downloadProblem(totallyUnknownProblem, false)
-                    }
-                }
-            }
-            When("no WRITE access") {
-                Then("throws AccessDeniedException") {
-                    shouldThrowExactly<AccessDeniedException> {
-                        downloader.downloadProblem(problemWithOnlyReadAccess, false)
                     }
                 }
             }

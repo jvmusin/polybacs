@@ -21,7 +21,6 @@ import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.*
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.NonIntegralTestPointsException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.PointsOnSampleException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.TestPointsDisabledException
-import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import io.github.jvmusin.polybacs.polygon.exception.response.TestGroupsDisabledException
 import io.github.jvmusin.polybacs.util.sequentiallyGroupedBy
@@ -67,16 +66,12 @@ class PolygonProblemDownloader(
      *
      * @param problemId id of the problem.
      * @return Problem with given [problemId] from Polygon API.
-     * @throws AccessDeniedException if no WRITE access is given.
      * @throws ProblemModifiedException if the problem has uncommitted changes.
      * @throws NoPackagesBuiltException if the problem has no built packages.
      * @throws OldBuiltPackageException if latest built package for the problem is not for the latest revision.
      */
     private suspend fun getProblem(problemId: Int): Problem {
         return polygonApi.getProblem(problemId).apply {
-            if (accessType == Problem.AccessType.READ) {
-                throw AccessDeniedException("Give WRITE permissions for this problem to Musin to use it")
-            }
             if (modified) {
                 throw ProblemModifiedException(
                     "Problem is modified. Rollback or commit changes."
@@ -397,7 +392,6 @@ class PolygonProblemDownloader(
      * @param includeTests if true then the problem tests will also be downloaded.
      * @return The problem with or without tests, depending on [includeTests] parameter.
      * @throws NoSuchProblemException if the problem does not exist.
-     * @throws AccessDeniedException if not enough rights to download the problem.
      * @throws ProblemDownloadingException if something gone wrong while downloading the problem.
      */
     suspend fun downloadProblem(
