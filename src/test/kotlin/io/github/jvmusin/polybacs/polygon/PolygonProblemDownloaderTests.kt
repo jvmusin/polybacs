@@ -17,7 +17,6 @@ import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonIntegralTes
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonSequentialTestIndices
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonSequentialTestsInTestGroup
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNormalTestGroupsAndPoints
-import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithOnlyReadAccess
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithPointsOnSample
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithPointsOnSamplesGroup
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithTestGroupsButNoPointsEnabled
@@ -74,6 +73,7 @@ class PolygonProblemDownloaderTests(private val downloader: PolygonProblemDownlo
     ) = IRTest(index, isSample, input.toByteArray(), output.toByteArray(), points, groupName)
 
     init {
+        @Suppress("LeakingThis") // OK for tests
         Given("downloadProblem") {
             When("problem is unknown") {
                 Then("throws NoSuchProblemException") {

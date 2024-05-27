@@ -410,7 +410,6 @@ class PolygonProblemDownloader(
 
         val info = async { getProblemInfo(problemId) }
         val statement = async { downloadStatement(problemId, packageId, statementFormat, language) }
-        val tutorial = async { polygonApi.getTutorialRaw(problemId, packageId, statementFormat, language) }
         val checker = async { downloadChecker(problemId, packageId) }
 
         val testsAndTestGroups = async {
