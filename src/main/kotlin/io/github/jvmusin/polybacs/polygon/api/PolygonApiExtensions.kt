@@ -93,23 +93,6 @@ suspend fun PolygonApi.getStatementFiles(
     return getFilesFromZipPackage(problemId, packageId, path)
 }
 
-suspend fun PolygonApi.getTutorialRaw(
-    problemId: Int,
-    packageId: Int,
-    format: StatementFormat,
-    language: String,
-): ByteArray? {
-    val formatString = format.lowercase
-    val path = listOf(
-        "statements",
-        ".$formatString",
-        language,
-        "tutorial.$formatString",
-    ).joinToString("/")
-
-    return getFileFromZipPackage(problemId, packageId, path)
-}
-
 /**
  * Returns problem with the given [problemId] from the problem list.
  *

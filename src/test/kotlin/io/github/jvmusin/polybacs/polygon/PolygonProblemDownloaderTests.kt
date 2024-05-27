@@ -17,7 +17,6 @@ import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonIntegralTes
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonSequentialTestIndices
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNonSequentialTestsInTestGroup
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithNormalTestGroupsAndPoints
-import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithOnlyReadAccess
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithPointsOnSample
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithPointsOnSamplesGroup
 import io.github.jvmusin.polybacs.polygon.TestProblems.problemWithTestGroupsButNoPointsEnabled
@@ -36,7 +35,6 @@ import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.*
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.NonIntegralTestPointsException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.PointsOnSampleException
 import io.github.jvmusin.polybacs.polygon.exception.downloading.tests.points.TestPointsDisabledException
-import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.BehaviorSpec
@@ -75,18 +73,12 @@ class PolygonProblemDownloaderTests(private val downloader: PolygonProblemDownlo
     ) = IRTest(index, isSample, input.toByteArray(), output.toByteArray(), points, groupName)
 
     init {
+        @Suppress("LeakingThis") // OK for tests
         Given("downloadProblem") {
             When("problem is unknown") {
                 Then("throws NoSuchProblemException") {
                     shouldThrowExactly<NoSuchProblemException> {
                         downloader.downloadProblem(totallyUnknownProblem, false)
-                    }
-                }
-            }
-            When("no WRITE access") {
-                Then("throws AccessDeniedException") {
-                    shouldThrowExactly<AccessDeniedException> {
-                        downloader.downloadProblem(problemWithOnlyReadAccess, false)
                     }
                 }
             }

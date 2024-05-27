@@ -4,7 +4,6 @@ import io.github.jvmusin.polybacs.api.StatementFormat
 import io.github.jvmusin.polybacs.ir.IRProblem
 import io.github.jvmusin.polybacs.polygon.api.PolygonApi
 import io.github.jvmusin.polybacs.polygon.exception.downloading.ProblemDownloadingException
-import io.github.jvmusin.polybacs.polygon.exception.response.AccessDeniedException
 import io.github.jvmusin.polybacs.polygon.exception.response.NoSuchProblemException
 import org.springframework.stereotype.Service
 
@@ -24,7 +23,6 @@ class PolygonService(
      * Additionally, you can choose a [statementFormat] between `PDF` and `HTML`.
      *
      * @throws NoSuchProblemException if the problem does not exist.
-     * @throws AccessDeniedException if not enough rights to download the problem.
      * @throws ProblemDownloadingException if something went wrong while downloading the problem.
      */
     suspend fun downloadProblem(
