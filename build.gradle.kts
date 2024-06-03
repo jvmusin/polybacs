@@ -23,7 +23,7 @@ repositories {
 
 val jsoupVersion = "1.17.2"
 val kotestVersion = "5.9.0"
-val kotestExtensionsSpringVersion = "1.1.3"
+val kotestExtensionsSpringVersion = "1.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
