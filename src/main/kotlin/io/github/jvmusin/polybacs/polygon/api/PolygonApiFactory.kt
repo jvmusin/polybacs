@@ -3,11 +3,13 @@ package io.github.jvmusin.polybacs.polygon.api
 import io.github.jvmusin.polybacs.polygon.PolygonConfig
 import io.github.jvmusin.polybacs.util.sha512
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingle
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.codec.ClientCodecConfigurer
 import org.springframework.web.reactive.function.BodyExtractors
@@ -39,7 +41,17 @@ class PolygonApiFactory(
     private val responseCode400to200Filter = createFilter { request, next ->
         val response = next.exchange(request)
         when (response.statusCode()) {
-            HttpStatus.BAD_REQUEST -> response.mutate().statusCode(HttpStatus.OK).build()
+            HttpStatus.BAD_REQUEST -> {
+                val res = response.mutate()
+                val body = response.body(BodyExtractors.toDataBuffers()).awaitSingle().toString(Charsets.UTF_8)
+                if ("Too many requests. Please, wait few seconds and try again" in body) {
+                    logger.info("Too many requests occurred, making code to 500 to repeat")
+                    res.statusCode(HttpStatusCode.valueOf(500)).body(body).build()
+                } else {
+                    res.statusCode(HttpStatus.OK).build()
+                }
+            }
+
             else -> response
         }
     }
