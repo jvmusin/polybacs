@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.http.codec.ClientCodecConfigurer
 import org.springframework.web.reactive.function.BodyExtractors
@@ -44,9 +43,10 @@ class PolygonApiFactory(
             HttpStatus.BAD_REQUEST -> {
                 val res = response.mutate()
                 val body = response.body(BodyExtractors.toDataBuffers()).awaitSingle().toString(Charsets.UTF_8)
+                res.body(body)
                 if ("Too many requests. Please, wait few seconds and try again" in body) {
                     logger.info("Too many requests occurred, making code to 500 to repeat")
-                    res.statusCode(HttpStatusCode.valueOf(500)).body(body).build()
+                    res.statusCode(HttpStatus.INTERNAL_SERVER_ERROR).build()
                 } else {
                     res.statusCode(HttpStatus.OK).build()
                 }
