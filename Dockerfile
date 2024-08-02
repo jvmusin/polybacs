@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.8
+# syntax = docker/dockerfile:1.9
 
 FROM eclipse-temurin:21.0.4_7-jdk-alpine
 RUN apk add --update npm
