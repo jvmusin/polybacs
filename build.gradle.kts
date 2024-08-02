@@ -21,7 +21,7 @@ repositories {
     mavenCentral()
 }
 
-val jsoupVersion = "1.17.2"
+val jsoupVersion = "1.18.1"
 val kotestVersion = "5.9.1"
 val kotestExtensionsSpringVersion = "1.3.0"
 
