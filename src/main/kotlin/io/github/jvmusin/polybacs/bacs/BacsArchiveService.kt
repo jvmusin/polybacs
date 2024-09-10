@@ -42,12 +42,38 @@ class BacsArchiveService(
                 .contentType(MediaType("application", "zip"))
         }.build()
 
-        val response = client.post()
-            .uri("/upload")
-            .body(BodyInserters.fromMultipartData(body))
-            .retrieve()
-            .toEntity<String>()
-            .awaitSingle()
+        val response = try {
+            client.post()
+                .uri("/upload")
+                .body(BodyInserters.fromMultipartData(body))
+                .headers {
+                    it.put(
+                        "Accept",
+                        listOf("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
+                    )
+                    it.put("Accept-Encoding", listOf("gzip, deflate, br, zstd"))
+                    it.put("Accept-Language", listOf("en-US,en;q=0.9,ru;q=0.8"))
+                    it.put("Host", listOf("bacs.cs.istu.ru"))
+                    it.put("Origin", listOf("https://archive.bacs.cs.istu.ru"))
+                    it.put("Referer", listOf("https://archive.bacs.cs.istu.ru/repository/upload"))
+                    it.put("Dnt", listOf("1"))
+                    it.put(
+                        "User-Agent",
+                        listOf("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
+                    )
+
+                    it.put("Sec-Fetch-Dest", listOf("document"))
+                    it.put("Sec-Fetch-Mode", listOf("navigate"))
+                    it.put("Sec-Fetch-Site", listOf("same-origin"))
+                    it.put("Sec-Fetch-User", listOf("?1"))
+                    it.put("Content-Type", listOf("multipart/form-data"))
+                }
+                .retrieve()
+                .toEntity<String>()
+                .awaitSingle()
+        } catch (e: Exception) {
+            throw e
+        }
         if (!response.statusCode.is2xxSuccessful) {
             throw BacsProblemUploadException("Code ${response.statusCode}, Message ${response.body}")
         }
