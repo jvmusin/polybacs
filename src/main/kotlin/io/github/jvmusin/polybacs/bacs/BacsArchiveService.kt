@@ -4,27 +4,32 @@ import io.github.jvmusin.polybacs.api.AdditionalProblemProperties
 import io.github.jvmusin.polybacs.ir.IRProblem
 import io.github.jvmusin.polybacs.sybon.toZipArchive
 import io.github.jvmusin.polybacs.util.RetryPolicy
-import kotlinx.coroutines.reactor.awaitSingle
+import okhttp3.Credentials
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import org.springframework.http.MediaType
-import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.stereotype.Service
-import org.springframework.web.reactive.function.BodyInserters
-import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.awaitBody
-import org.springframework.web.reactive.function.client.toEntity
+import java.io.IOException
 import java.nio.file.Path
-import kotlin.io.path.readBytes
 
 /** Allows communicating to Bacs Archive. */
 @Service
 class BacsArchiveService(
     private val bacsConfig: BacsConfig,
 ) {
-    private val client = WebClient.builder()
-        .defaultHeaders { it.setBasicAuth(bacsConfig.username, bacsConfig.password) }
-        .baseUrl("https://archive.bacs.cs.istu.ru/repository")
+    // TODO: Replace with Spring client
+    private val client = OkHttpClient.Builder()
+        .addInterceptor { chain ->
+            val originalRequest = chain.request()
+            val newRequest = originalRequest.newBuilder()
+                .header("Authorization", Credentials.basic(bacsConfig.username, bacsConfig.password))
+                .build()
+            chain.proceed(newRequest)
+        }
         .build()
 
     /**
@@ -32,27 +37,38 @@ class BacsArchiveService(
      * throwing [BacsProblemUploadException] in case of uploading failure.
      */
     private suspend fun uploadProblem(zip: Path) {
-        val body = MultipartBodyBuilder().apply {
-            part("_5", "Upload")
-            part("archiver_format", "")
-            part("archiver_type", "7z")
-            part("response", "html")
-            part("archive", zip.readBytes())
-                .filename(zip.fileName.toString())
-                .contentType(MediaType("application", "zip"))
-        }.build()
+        val archiveFile = zip.toFile()
 
-        val response = client.post()
-            .uri("/upload")
-            .body(BodyInserters.fromMultipartData(body))
-            .retrieve()
-            .toEntity<String>()
-            .awaitSingle()
-        if (!response.statusCode.is2xxSuccessful) {
-            throw BacsProblemUploadException("Code ${response.statusCode}, Message ${response.body}")
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("archiver_format", "")
+            .addFormDataPart("archiver_type", "7z")
+            .addFormDataPart("response", "html")
+            .addFormDataPart(
+                "archive",
+                archiveFile.name,
+                archiveFile.asRequestBody("application/zip".toMediaType())
+            )
+            .build()
+
+        val request = Request.Builder()
+            .url("$BASE_URL/upload")
+            .post(requestBody)
+            .build()
+
+        val response = try {
+            client.newCall(request).execute()
+        } catch (e: Exception) {
+            throw BacsProblemUploadException("Error uploading the problem: ${e.message}")
         }
 
-        val content = requireNotNull(response.body)
+        if (!response.isSuccessful) {
+            throw BacsProblemUploadException("Error uploading the problem: ${response.code}")
+        }
+
+        val content = requireNotNull(response.body) {
+            "Empty response body"
+        }.string()
 
         if (content.contains("reserved: *$PENDING_IMPORT".toRegex())) return
 
@@ -66,17 +82,30 @@ class BacsArchiveService(
 
     /** Retrieves problem status in form if [BacsProblemStatus]. */
     private suspend fun getProblemStatus(problemId: String): BacsProblemStatus {
-        val body = MultipartBodyBuilder().apply {
-            part("response", "html")
-            part("ids", problemId)
-            part("_4", "Get status")
-        }.build()
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("response", "html")
+            .addFormDataPart("ids", problemId)
+            .build()
 
-        val content = client.post()
-            .uri("/status")
-            .body(BodyInserters.fromMultipartData(body))
-            .retrieve()
-            .awaitBody<String>()
+        val request = Request.Builder()
+            .url("$BASE_URL/status")
+            .post(requestBody)
+            .build()
+
+        val response = try {
+            client.newCall(request).execute()
+        } catch (e: IOException) {
+            throw BacsProblemUploadException("Failed to get status: ${e.message}")
+        }
+
+        if (!response.isSuccessful) {
+            throw BacsProblemUploadException("Unexpected response code: ${response.code}")
+        }
+
+        val content = requireNotNull(response.body) {
+            "Empty response body"
+        }.string()
 
         val row = Jsoup.parse(content).body()
             .getElementsByTag("table")[0]
@@ -140,5 +169,6 @@ class BacsArchiveService(
 
     private companion object {
         const val PENDING_IMPORT = "PENDING_IMPORT"
+        const val BASE_URL = "https://archive.bacs.cs.istu.ru/repository"
     }
 }

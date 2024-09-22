@@ -54,7 +54,12 @@ data class SybonCompiler(
         mono,
         fpc,
         python,
-        java
+        java,
+        dotnet,
+        kotlin,
+        golang,
+        node,
+        ruby,
     }
 }
 
