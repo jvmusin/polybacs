@@ -46,6 +46,9 @@ dependencies {
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-spring:$kotestExtensionsSpringVersion")
+
+    // Основная библиотека OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 }
 
 tasks.withType<KotlinCompile> {
