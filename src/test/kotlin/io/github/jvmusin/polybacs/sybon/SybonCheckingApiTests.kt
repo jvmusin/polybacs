@@ -29,13 +29,14 @@ import io.kotest.matchers.collections.shouldBeSingleton
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.fail
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class SybonCheckingApiTests(api: SybonCheckingApi) : StringSpec({
     "getCompilers should return all known compilers" {
         val compilers = api.getCompilers()
-        compilers shouldContainAll listOf(
+        val knownCompilers = listOf(
             C,
             CPP,
             CSHARP_MONO,
@@ -53,6 +54,14 @@ class SybonCheckingApiTests(api: SybonCheckingApi) : StringSpec({
             RUBY,
             JAVASCRIPT,
         )
+        compilers shouldContainAll knownCompilers
+
+        val extraCompilers = compilers.filter { it !in knownCompilers }
+        if (extraCompilers.isNotEmpty()) {
+            fail {
+                "Found extra compilers: \n${extraCompilers.joinToString("\n")}"
+            }
+        }
     }
 
     "submitSolution should submit a correct solution and receive submission id" {
