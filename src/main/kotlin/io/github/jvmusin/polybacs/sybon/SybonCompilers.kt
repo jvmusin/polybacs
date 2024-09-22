@@ -8,8 +8,6 @@ import io.github.jvmusin.polybacs.sybon.api.SybonCompiler
  * Sybon compilers.
  *
  * Contains all known Sybon compilers in one place.
- *
- * Call [SybonCompilers.list] to get the list of these compilers.
  */
 object SybonCompilers {
     val C = SybonCompiler(
@@ -203,27 +201,5 @@ object SybonCompilers {
         numberOfProcesses = 1000,
         outputLimitBytes = 536870912,
         realTimeLimitMillis = 120000
-    )
-
-    /**
-     * List of all the sybon compilers.
-     */
-    val list = listOf(
-        C,
-        CPP,
-        CSHARP_MONO,
-        DELPHI,
-        PASCAL,
-        PYTHON2,
-        PYTHON3,
-        JAVA11,
-        JAVA17,
-        CPP17,
-        CPP20,
-        CSHARP_DOT_NET_6,
-        KOTLIN,
-        GOLANG,
-        RUBY,
-        JAVASCRIPT,
     )
 }

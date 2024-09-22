@@ -64,7 +64,7 @@ class SybonArchiveApiTests(api: SybonArchiveApi) : StringSpec({
             name = "Лягушка и многоугольник",
             author = "Musin",
             format = "pdf",
-            statementUrl = "https://statement.bacs.cs.istu.ru/statement/get/CkhiYWNzL3Byb2JsZW0vbXVuaWNpcGFsMjAyMC05MTEtZnJvZy1hbmQtcG9seWdvbi9zdGF0ZW1lbnQvdmVyc2lvbnMvQy9wZGYSBgoEIhPfRQ/bacs/ZxpLkyyoS9yj0nL9Ee0sAsEkLEGKJpSrKUINVx6pqNRs2Bf7gq7CEo4EDXtUbRf46vsomyXGyfLh-d-tKr4iufBPW_0uzWqcFVAfcA-dtRxM3SXzeP7HigTT9zk5-vMHW7Gp20n32TopYdK-eLuA0crf4kv_1rxke3wehEIOvw70YOPb--KBvjENk-qXEIqg4jaxs82kenpkhK33kcUWnGkz-u2K9O8oLgnPtUzJDlMpm96yFKQ8G6lNGJ734jutnoijlHk1FJy0gzheyjWyKS0-Jy4QLgo517jaIA3tfTDBlIbBqLEubXG",
+            statementUrl = "https://statement.bacs.cs.istu.ru/statement/get/CkhiYWNzL3Byb2JsZW0vbXVuaWNpcGFsMjAyMC05MTEtZnJvZy1hbmQtcG9seWdvbi9zdGF0ZW1lbnQvdmVyc2lvbnMvQy9wZGYSBgoEIhPfRQ/bacs/ZxpLkyyoS9yj0nL9Ee0sAsEkLEGKJpSrKUINVx6pqNRs2Bf7gq7CEo4EDXtUbRf46vsomyXGyfLh-d-tKr4iufBPW_0uzWqcFVAfcA-dtRxM3SXzeP7HigTT9zk5-vMHW7Gp20n32TopYdK-eLuA0crf4kv_1rxke3wehEIOvw70YOPb--KBvjENk-qXEIqg4jaxs82kenpkhK33kcUWnGkz-u2K9O8oLgnPtUzJDlMpm96yFKQ8G6lNGJ734jutnoijlHk1FJy0gzheyjWyKS0-Jy4QLgo517jaIA3tfTDBlIbBqLEubXGzAdoZ3ndDE5zhFxnABR5zZ0_NKq1Imw",
             collectionId = 1,
             testsCount = 62,
             pretests = emptyList(),

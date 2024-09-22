@@ -1,6 +1,22 @@
 package io.github.jvmusin.polybacs.sybon
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.C
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP17
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP20
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CSHARP_DOT_NET_6
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CSHARP_MONO
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.DELPHI
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.GOLANG
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.JAVA11
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.JAVA17
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.JAVASCRIPT
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.KOTLIN
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.PASCAL
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.PYTHON2
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.PYTHON3
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.RUBY
 import io.github.jvmusin.polybacs.sybon.api.SybonCheckingApi
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult.BuildResult
@@ -19,7 +35,24 @@ import org.springframework.boot.test.context.SpringBootTest
 class SybonCheckingApiTests(api: SybonCheckingApi) : StringSpec({
     "getCompilers should return all known compilers" {
         val compilers = api.getCompilers()
-        compilers shouldContainAll SybonCompilers.list
+        compilers shouldContainAll listOf(
+            C,
+            CPP,
+            CSHARP_MONO,
+            DELPHI,
+            PASCAL,
+            PYTHON2,
+            PYTHON3,
+            JAVA11,
+            JAVA17,
+            CPP17,
+            CPP20,
+            CSHARP_DOT_NET_6,
+            KOTLIN,
+            GOLANG,
+            RUBY,
+            JAVASCRIPT,
+        )
     }
 
     "submitSolution should submit a correct solution and receive submission id" {
