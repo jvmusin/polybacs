@@ -57,6 +57,9 @@ data class SybonCompiler(
         java,
         dotnet,
         kotlin,
+        golang,
+        node,
+        ruby,
     }
 }
 
