@@ -56,6 +56,7 @@ data class SybonCompiler(
         python,
         java,
         dotnet,
+        kotlin,
     }
 }
 
