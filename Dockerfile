@@ -4,7 +4,7 @@ FROM eclipse-temurin:21.0.5_11-jdk-alpine
 RUN apk add --update npm
 WORKDIR /app
 COPY . .
-RUN --mount=type=secret,id=ACCESS_KEYS,dst=ACCESS_KEYS.yaml cp ACCESS_KEYS.yaml src/main/resources/application.yaml
+RUN --mount=type=secret,id=application_yaml,dst=application.yaml cp application.yaml src/main/resources/application.yaml
 RUN cd frontend && npm ci && npm run build
 RUN chmod +x gradlew && ./gradlew -PcopyFrontend build
 
