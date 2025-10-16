@@ -1,4 +1,4 @@
-# syntax = docker/dockerfile:1.10
+# syntax = docker/dockerfile:1.19
 
 FROM eclipse-temurin:21.0.5_11-jdk-alpine
 RUN apk upgrade
