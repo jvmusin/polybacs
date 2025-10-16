@@ -1,6 +1,7 @@
 # syntax = docker/dockerfile:1.10
 
 FROM eclipse-temurin:21.0.5_11-jdk-alpine
+RUN apk upgrade
 RUN apk add --update npm
 WORKDIR /app
 COPY . .
