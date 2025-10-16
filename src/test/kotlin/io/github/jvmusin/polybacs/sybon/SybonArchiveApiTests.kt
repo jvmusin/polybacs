@@ -17,9 +17,10 @@ class SybonArchiveApiTests(api: SybonArchiveApi) : StringSpec({
     "getCollections should return many collections" {
 
         // throw a test exception here
+        val sb = StringBuilder()
         for (entry in System.getenv()!!.entries)
-            println("ENTRY K='${entry.key.toList().joinToString("-")}' V='${entry.value.toList().joinToString("-")}'")
-        throw RuntimeException("Oops")
+            sb.append("ENTRY K='${entry.key.toList().joinToString("-")}' V='${entry.value.toList().joinToString("-")}'")
+        throw RuntimeException("Oops\n$sb")
 
         val expected = SybonCollection(
             id = 1,
