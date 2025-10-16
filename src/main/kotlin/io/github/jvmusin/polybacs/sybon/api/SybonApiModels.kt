@@ -60,6 +60,9 @@ data class SybonCompiler(
         golang,
         node,
         ruby,
+        rust,
+        php,
+        bun,
     }
 }
 

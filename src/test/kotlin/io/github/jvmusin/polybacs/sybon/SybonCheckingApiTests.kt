@@ -1,11 +1,13 @@
 package io.github.jvmusin.polybacs.sybon
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.BUN_JS
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.BUN_TS
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.C
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP17
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.CPP20
-import io.github.jvmusin.polybacs.sybon.SybonCompilers.CSHARP_DOT_NET_6
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.CSHARP_DOT_NET_8
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.CSHARP_MONO
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.DELPHI
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.GOLANG
@@ -14,9 +16,11 @@ import io.github.jvmusin.polybacs.sybon.SybonCompilers.JAVA17
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.JAVASCRIPT
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.KOTLIN
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.PASCAL
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.PHP
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.PYTHON2
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.PYTHON3
 import io.github.jvmusin.polybacs.sybon.SybonCompilers.RUBY
+import io.github.jvmusin.polybacs.sybon.SybonCompilers.RUST
 import io.github.jvmusin.polybacs.sybon.api.SybonCheckingApi
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult
 import io.github.jvmusin.polybacs.sybon.api.SybonSubmissionResult.BuildResult
@@ -48,11 +52,15 @@ class SybonCheckingApiTests(api: SybonCheckingApi) : StringSpec({
             JAVA17,
             CPP17,
             CPP20,
-            CSHARP_DOT_NET_6,
+            CSHARP_DOT_NET_8,
             KOTLIN,
             GOLANG,
             RUBY,
             JAVASCRIPT,
+            RUST,
+            PHP,
+            BUN_TS,
+            BUN_JS,
         )
         compilers shouldContainAll knownCompilers
 

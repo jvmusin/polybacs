@@ -142,12 +142,12 @@ object SybonCompilers {
         outputLimitBytes = 536870912,
         realTimeLimitMillis = 120000
     )
-    val CSHARP_DOT_NET_6 = SybonCompiler(
+    val CSHARP_DOT_NET_8 = SybonCompiler(
         id = 12,
         type = SybonCompiler.Type.dotnet,
-        name = "C# .NET 6.0",
-        description = ".NET 6.0",
-        args = "conf=Release,-no-restore,-use-current-runtime,-no-dependencies,-nologo,-disable-build-servers",
+        name = "C# .NET 8.0",
+        description = ".NET 8.0",
+        args = "conf=Release,consoleLoggerParameters:NoSummary,verbosity:quiet,nologo",
         timeLimitMillis = 60000,
         memoryLimitBytes = 1610612736,
         numberOfProcesses = 1000,
@@ -158,7 +158,7 @@ object SybonCompilers {
         id = 13,
         type = SybonCompiler.Type.kotlin,
         name = "Kotlin",
-        description = "Kotlin 1.7.21",
+        description = "Kotlin 1.9.23",
         args = "",
         timeLimitMillis = 60000,
         memoryLimitBytes = 1610612736,
@@ -193,9 +193,57 @@ object SybonCompilers {
     val JAVASCRIPT = SybonCompiler(
         id = 16,
         type = SybonCompiler.Type.node,
-        name = "JavaScript",
+        name = "JavaScript (d8)",
         description = "JavaScript",
         args = "",
+        timeLimitMillis = 60000,
+        memoryLimitBytes = 1610612736,
+        numberOfProcesses = 1000,
+        outputLimitBytes = 536870912,
+        realTimeLimitMillis = 120000
+    )
+    val RUST = SybonCompiler(
+        id = 17,
+        type = SybonCompiler.Type.rust,
+        name = "Rust",
+        description = "Rust",
+        args = "optimize",
+        timeLimitMillis = 60000,
+        memoryLimitBytes = 1610612736,
+        numberOfProcesses = 1000,
+        outputLimitBytes = 536870912,
+        realTimeLimitMillis = 120000
+    )
+    val PHP = SybonCompiler(
+        id = 18,
+        type = SybonCompiler.Type.php,
+        name = "PHP 8.1",
+        description = "PHP 8.1",
+        args = "",
+        timeLimitMillis = 60000,
+        memoryLimitBytes = 1610612736,
+        numberOfProcesses = 1000,
+        outputLimitBytes = 536870912,
+        realTimeLimitMillis = 120000
+    )
+    val BUN_TS = SybonCompiler(
+        id = 19,
+        type = SybonCompiler.Type.bun,
+        name = "TypeScript (Bun)",
+        description = "TypeScript (Bun)",
+        args = "no-cache,no-watch,no-install,no-threading,max-thread-count=1,disable-workers,disable-jit,smol,disable-timers",
+        timeLimitMillis = 60000,
+        memoryLimitBytes = 1610612736,
+        numberOfProcesses = 1000,
+        outputLimitBytes = 536870912,
+        realTimeLimitMillis = 120000
+    )
+    val BUN_JS = SybonCompiler(
+        id = 20,
+        type = SybonCompiler.Type.bun,
+        name = "JavaScript (Bun)",
+        description = "JavaScript (Bun)",
+        args = "no-cache,no-watch,no-install,no-threading,max-thread-count=1,disable-workers,disable-jit,smol,disable-timers",
         timeLimitMillis = 60000,
         memoryLimitBytes = 1610612736,
         numberOfProcesses = 1000,
