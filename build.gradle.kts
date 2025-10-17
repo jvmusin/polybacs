@@ -40,7 +40,7 @@ dependencies {
 
     implementation("org.jsoup:jsoup:$jsoupVersion")
 
-    implementation("org.apache.commons:commons-compress:1.27.1") // For reading zip archives from Polygon
+    implementation("org.apache.commons:commons-compress:1.28.0") // For reading zip archives from Polygon
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml") // For parsing problem.xml
 
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
