@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1.19
 
-FROM eclipse-temurin:21.0.8_9-jdk-alpine
+FROM eclipse-temurin:25-jdk-alpine
 RUN apk upgrade
 RUN apk add --update npm
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN --mount=type=secret,id=application_yaml,dst=application.yaml cp application.
 RUN cd frontend && npm ci && npm run build
 RUN chmod +x gradlew && ./gradlew -PcopyFrontend build
 
-FROM eclipse-temurin:21.0.8_9-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 COPY --from=0 /app/build/libs/polybacs-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","app.jar"]
