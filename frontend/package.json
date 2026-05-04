@@ -24,7 +24,7 @@
     "react-toastify": "^10.0.4",
     "react-use-websocket": "^4.8.1",
     "tailwind-merge": "^2.2.1",
-    "zod": "^3.22.4"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.28",
